@@ -148,11 +148,11 @@ def replace_nan(df, replace_with):
     return df.replace(np.nan, replace_with, regex=True)
 
 
-def threads(iterator, target_func):
+def threads(iterator, target_func,max_workers=None):
     #     for i in iterator:
     #         target_func(i)
     ################################################################################
-    with concurrent.futures.ThreadPoolExecutor(max_workers=None) as executor:
+    with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
         executor.map(target_func, iterator)
 
 ################################################################################

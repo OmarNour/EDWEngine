@@ -2,7 +2,8 @@ from model import *
 
 
 class ETLRun:
-    def __init__(self):
+    def __init__(self, max_workers=None):
+        self.max_workers = max_workers
         self.run_id = None
         self.start_time = None
         self.end_time = None
@@ -139,7 +140,7 @@ class ETLRun:
                                         for level_of_process in process_dic.keys():
                                             if not i_data_source.process_failed:
                                                 processes = process_dic[level_of_process]
-                                                threads(iterator=processes, target_func=self.run_process)
+                                                threads(iterator=processes, target_func=self.run_process,max_workers=self.max_workers)
         self.source_failed = i_data_source.process_failed
 
     def generate_run_id(self):
@@ -156,7 +157,7 @@ class ETLRun:
             for level in self.execution_plan.keys():
                 if not self.source_failed:
                     sources_in_level = self.execution_plan[level]
-                    threads(iterator=sources_in_level, target_func=self.run_source)
+                    threads(iterator=sources_in_level, target_func=self.run_source,max_workers=None)
 
         self.end_time = time.time()
         self.time_elapsed = self.end_time - self.start_time
