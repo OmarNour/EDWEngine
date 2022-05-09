@@ -19,10 +19,10 @@ from sqlalchemy import create_engine
 
 pp = pprint.PrettyPrinter(depth=4)
 
-# FAILED_SUCCESS = [1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 FAILED_SUCCESS = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
     , 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
     , 0, 0, 0, 0, 0, 0, 0, 1, 0]
+# FAILED_SUCCESS = [0]
 
 ELT_PROCESS_VIEW = """ 
     select 
