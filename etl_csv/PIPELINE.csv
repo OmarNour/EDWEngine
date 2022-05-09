@@ -1,0 +1,7 @@
+﻿ID,TGT_DB_ID,SRC_DB_ID,ACTIVE
+pipe1,db2,db1,1
+pipe2,db3,db2,1
+pipe3,db4,db7,1
+pipe4,db6,db5,1
+pipe5,db8,db7,1
+pipe6,db9,db8,1

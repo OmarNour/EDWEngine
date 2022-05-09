@@ -1,0 +1,7 @@
+﻿ID,LAYER_ID,PIPELINE_ID,LEVEL,ACTIVE,DESC
+lyrP1,lyr1,pipe1,0,1,load raw data to work db
+lyrP2,lyr2,pipe2,0,1,"staging data, holds passed data only"
+lyrP3,lyr3,pipe3,0,1,"surrogate keys DB, built from cleaned data"
+lyrP4,lyr4,pipe4,0,1,natural & SKs compined together
+lyrP5,lyr6,pipe5,0,1,dwh model
+lyrP6,lyr7,pipe6,0,1,semantic layer
