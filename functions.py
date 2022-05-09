@@ -131,12 +131,12 @@ def Logging_decorator(function):
     return wrapper
 
 
-def add_obj_to_dic(objx, i_dic):
-    if objx.id not in i_dic:
-        i_dic[objx.id] = objx
+def add_obj_to_dic(obj, i_dic):
+    if obj.id not in i_dic:
+        i_dic[obj.id] = obj
     else:
-        objx = i_dic[objx.id]
-    return objx
+        obj = i_dic[obj.id]
+    return obj
 
 
 def sleep(i_sec=None):
