@@ -165,6 +165,5 @@ class ETLRun:
 ##################################################################################################################
 if __name__ == '__main__':
     # run this in terminal id issue occurred related to libpq: "sudo ln -s /usr/lib/libpq.5.4.dylib /usr/lib/libpq.5.dylib"
-
     x = ETLRun()
     x.run()
