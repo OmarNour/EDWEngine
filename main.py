@@ -129,8 +129,8 @@ class ETLRun:
 
     @Logging_decorator
     def run_source(self, i_data_source: DataSource):
-        def run_target_table(target_table):
-            for process in target_table_dic[target_table]:
+        def run_target_table(i_target_table):
+            for process in target_table_dic[i_target_table]:
                 self.run_process(process)
 
         loads = i_data_source.get_loads(self.config_engine)
@@ -152,14 +152,16 @@ class ETLRun:
                                                 threads(iterator=target_table_dic.keys(), target_func=run_target_table, max_workers=self.max_workers)
         self.source_failed = i_data_source.process_failed
 
+    @Logging_decorator
     def generate_run_id(self):
         self.run_id = int(str(time.time()).replace('.', ''))
 
     @Logging_decorator
     def run(self):
         if not self.end_time:
-            self.generate_run_id()
             self.start_time = time.time() if self.start_time is None else self.start_time
+
+            self.generate_run_id()
             self.register_all_processes()
             self.prepare_execution_plan()
 
