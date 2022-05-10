@@ -111,9 +111,7 @@ class Process:
         self.last_load_id = None
         self.passed = None
 
-    def run(self, load_id: str, run_id: int):
-        self.last_load_id = load_id
-        self.run_id = run_id
+    def run(self):
         # **********************************************************************#
         # check for the process status in the last run
         # instead of sleep(n), call the DB procedure, to run the process
@@ -131,7 +129,7 @@ class Process:
 
         print('Result:{} - {}'.format(return_code, return_msg)
               , 'Source: {}'.format(source_id)
-              , 'Load: {}'.format(load_id)
+              , 'Load: {}'.format(self.last_load_id)
               , 'Layer: {}'.format(layer_id)
               , 'Process: {}'.format(self._id), sep='\t')
 

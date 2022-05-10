@@ -22,7 +22,7 @@ pp = pprint.PrettyPrinter(depth=4)
 FAILED_SUCCESS = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
     , 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
     , 0, 0, 0, 0, 0, 0, 0, 1, 0]
-# FAILED_SUCCESS = [0]
+FAILED_SUCCESS = [0]
 
 ELT_PROCESS_VIEW = """ 
     select 
@@ -92,6 +92,11 @@ ELT_PROCESS_VIEW = """
         on f.id = h.layer_id
 
     where a.active = 1
+    order by source_level
+        ,layer_level
+        ,layer_pipeline_level
+        ,source_pipeline_level
+        ,process_level
     """
 
 SOURCE_LOADS = """ 

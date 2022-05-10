@@ -21,6 +21,7 @@ class ETLRun:
         self.registered_src_pipelines = {}
         self.registered_processes = {}
         self.busy_target_tables = {}
+        self.global_target_table = {}
         self.config_engine = create_engine('postgresql://postgres:postgres@localhost:5432/etl_config_db')
 
     @Logging_decorator
@@ -96,6 +97,9 @@ class ETLRun:
             if ds not in self.execution_plan[ds_level]:
                 self.execution_plan[ds_level].append(ds)
 
+            if target_table not in self.global_target_table:
+                self.global_target_table[target_table] = []
+
     @Logging_decorator
     def register_all_processes(self):
         df = exec_query(ELT_PROCESS_VIEW, self.config_engine)
@@ -105,7 +109,7 @@ class ETLRun:
     #######################################################################################
     @Logging_decorator
     def run_process(self, p: Process):
-        load_id = p.source_pipeline.data_source.current_load_id
+        # load_id = p.source_pipeline.data_source.current_load_id
         server_id = p.source_pipeline.layer_pipeline.pipeline.tgt_db.server.id
         tgt_db_id = p.source_pipeline.layer_pipeline.pipeline.tgt_db.id
         tgt_table = p.target_table
@@ -116,7 +120,7 @@ class ETLRun:
                 self.set_busy_target_tables(server_id, tgt_db_id, tgt_table)
                 try:
                     assert self.get_busy_target_tables(server_id, tgt_db_id).count(tgt_table) == 1, "Warning: Target table counted more than once in busy list!, {}".format(tgt_table)
-                    return_code, return_msg = p.run(load_id, self.run_id)
+                    return_code, return_msg = p.run()
                     if return_code != 0:
                         p.source_pipeline.data_source.process_failed = True
                     self.set_busy_target_tables(server_id, tgt_db_id, tgt_table, 0)
@@ -125,13 +129,19 @@ class ETLRun:
                     self.set_busy_target_tables(server_id, tgt_db_id, tgt_table, 0)
                     print(msg)
 
+        self.global_target_table[tgt_table].remove(p)
+
     #######################################################################################
 
     @Logging_decorator
     def run_source(self, i_data_source: DataSource):
-        def run_target_table(i_target_table):
+        def send_to_global_target_table(i_target_table):
             for process in target_table_dic[i_target_table]:
-                self.run_process(process)
+                process.last_load_id = row.load_id
+                process.run_id = self.run_id
+                self.global_target_table[i_target_table].append(process)
+                while process in self.global_target_table[i_target_table]:
+                    pass
 
         loads = i_data_source.get_loads(self.config_engine)
         for row in loads.itertuples():
@@ -149,7 +159,7 @@ class ETLRun:
                                         for level_of_process in process_dic.keys():
                                             if not i_data_source.process_failed:
                                                 target_table_dic = process_dic[level_of_process]
-                                                threads(iterator=target_table_dic.keys(), target_func=run_target_table, max_workers=self.max_workers)
+                                                threads(iterator=target_table_dic.keys(), target_func=send_to_global_target_table, max_workers=self.max_workers)
         self.source_failed = i_data_source.process_failed
 
     @Logging_decorator
@@ -157,7 +167,7 @@ class ETLRun:
         self.run_id = int(str(time.time()).replace('.', ''))
 
     @Logging_decorator
-    def run(self):
+    def run_all_sources(self):
         if not self.end_time:
             self.start_time = time.time() if self.start_time is None else self.start_time
 
@@ -173,10 +183,26 @@ class ETLRun:
         self.end_time = time.time()
         self.time_elapsed = self.end_time - self.start_time
 
+    def run_target_table_processes(self):
+        def run_target_table(target_table):
+            for process in self.global_target_table[target_table]:
+                self.run_process(process)
+
+        while self.end_time is None:
+            threads(iterator=self.global_target_table.keys(), target_func=run_target_table, max_workers=None)
+            # run_target_table()
+
+    def run(self, run_seq):
+        if run_seq == 0:
+            self.run_target_table_processes()
+
+        if run_seq == 1:
+            self.run_all_sources()
+
 
 ##################################################################################################################
 if __name__ == '__main__':
     # run this in terminal id issue occurred related to libpq: "sudo ln -s /usr/lib/libpq.5.4.dylib /usr/lib/libpq.5.dylib"
     x = ETLRun()
-    x.run()
+    threads(iterator=[0, 1], target_func=x.run, max_workers=None)
     print("time_elapsed:", x.time_elapsed)
