@@ -65,6 +65,7 @@ class ETLRun:
 
     def prepare_execution_plan(self):
         for process in self.registered_processes.values():
+            target_table = process.target_table
             process_level = process.level
             source_pipeline = process.source_pipeline
             source_pipeline_level = source_pipeline.level
@@ -82,10 +83,13 @@ class ETLRun:
             if source_pipeline_level not in ds.all_levels[layer_level][layer_pipeline_level]:
                 ds.all_levels[layer_level][layer_pipeline_level][source_pipeline_level] = {}
             if process_level not in ds.all_levels[layer_level][layer_pipeline_level][source_pipeline_level]:
-                ds.all_levels[layer_level][layer_pipeline_level][source_pipeline_level][process_level] = []
+                ds.all_levels[layer_level][layer_pipeline_level][source_pipeline_level][process_level] = {}
 
-            if process not in ds.all_levels[layer_level][layer_pipeline_level][source_pipeline_level][process_level]:
-                ds.all_levels[layer_level][layer_pipeline_level][source_pipeline_level][process_level].append(process)
+            if target_table not in ds.all_levels[layer_level][layer_pipeline_level][source_pipeline_level][process_level]:
+                ds.all_levels[layer_level][layer_pipeline_level][source_pipeline_level][process_level][target_table] = []
+
+            if process not in ds.all_levels[layer_level][layer_pipeline_level][source_pipeline_level][process_level][target_table]:
+                ds.all_levels[layer_level][layer_pipeline_level][source_pipeline_level][process_level][target_table].append(process)
 
             if ds_level not in self.execution_plan:
                 self.execution_plan[ds_level] = []
@@ -122,8 +126,13 @@ class ETLRun:
                     print(msg)
 
     #######################################################################################
+
     @Logging_decorator
     def run_source(self, i_data_source: DataSource):
+        def run_target_table(target_table):
+            for process in target_table_dic[target_table]:
+                self.run_process(process)
+
         loads = i_data_source.get_loads(self.config_engine)
         for row in loads.itertuples():
             i_data_source.current_load_id = row.load_id
@@ -139,8 +148,9 @@ class ETLRun:
                                         process_dic = source_pipelines_dic[level_of_source_pipeline]
                                         for level_of_process in process_dic.keys():
                                             if not i_data_source.process_failed:
-                                                processes = process_dic[level_of_process]
-                                                threads(iterator=processes, target_func=self.run_process, max_workers=self.max_workers)
+                                                target_table_dic = process_dic[level_of_process]
+                                                # processes = process_dic[level_of_process]
+                                                threads(iterator=target_table_dic.keys(), target_func=run_target_table, max_workers=self.max_workers)
         self.source_failed = i_data_source.process_failed
 
     def generate_run_id(self):
