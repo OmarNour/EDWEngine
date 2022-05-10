@@ -140,7 +140,7 @@ class ETLRun:
                                         for level_of_process in process_dic.keys():
                                             if not i_data_source.process_failed:
                                                 processes = process_dic[level_of_process]
-                                                threads(iterator=processes, target_func=self.run_process,max_workers=self.max_workers)
+                                                threads(iterator=processes, target_func=self.run_process, max_workers=self.max_workers)
         self.source_failed = i_data_source.process_failed
 
     def generate_run_id(self):
@@ -157,7 +157,7 @@ class ETLRun:
             for level in self.execution_plan.keys():
                 if not self.source_failed:
                     sources_in_level = self.execution_plan[level]
-                    threads(iterator=sources_in_level, target_func=self.run_source,max_workers=None)
+                    threads(iterator=sources_in_level, target_func=self.run_source, max_workers=None)
 
         self.end_time = time.time()
         self.time_elapsed = self.end_time - self.start_time
@@ -168,3 +168,4 @@ if __name__ == '__main__':
     # run this in terminal id issue occurred related to libpq: "sudo ln -s /usr/lib/libpq.5.4.dylib /usr/lib/libpq.5.dylib"
     x = ETLRun()
     x.run()
+    print("time_elapsed:", x.time_elapsed)
