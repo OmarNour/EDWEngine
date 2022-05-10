@@ -26,11 +26,11 @@ class ETLRun:
     @Logging_decorator
     def set_busy_target_tables(self, server=None, db=None, table_name=None, add=1):
         if server:
-            if not server in self.busy_target_tables:
+            if server not in self.busy_target_tables:
                 self.busy_target_tables[server] = {}
 
             if db:
-                if not db in self.busy_target_tables[server]:
+                if db not in self.busy_target_tables[server]:
                     self.busy_target_tables[server][db] = []
 
                 if table_name:
