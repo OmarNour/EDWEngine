@@ -149,7 +149,6 @@ class ETLRun:
                                         for level_of_process in process_dic.keys():
                                             if not i_data_source.process_failed:
                                                 target_table_dic = process_dic[level_of_process]
-                                                # processes = process_dic[level_of_process]
                                                 threads(iterator=target_table_dic.keys(), target_func=run_target_table, max_workers=self.max_workers)
         self.source_failed = i_data_source.process_failed
 
