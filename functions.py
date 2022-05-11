@@ -26,77 +26,87 @@ FAILED_SUCCESS = [0]
 
 ELT_PROCESS_VIEW = """ 
     select 
-          a.id process_id
-        , b.id source_id
-        , f.id layer_id
-        , c.id pipeline_id
-        , h.id layer_pipeline_id
-        , g.id source_pipeline_id
+          p.id process_id
+        , sp.id source_pipeline_id
+        , dsl.id source_layer_id
+        , l.id layer_id
+        , ds.id source_id
+        , pl.id pipeline_id
+        
 
-        , b."NAME" source_name
-        , f.abbrev layer_name
-        , a.apply_type
-        , a.process_type
+        , ds.source_name
+        , l.abbrev layer_name
+        , p.apply_type
+    
 
-        , cast(b."LEVEL" as int) source_level
-        , cast(f."LEVEL" as int) layer_level
-        , cast(h."LEVEL" as int) layer_pipeline_level
-        , cast(g."LEVEL" as int) source_pipeline_level
-        , cast(a."LEVEL" as int) process_level
+        , cast(ds.source_level as int) source_level
+        , cast(l.layer_level as int) layer_level
+        , cast(dsl.ds_layer_level as int) data_source_layer_level
+        , cast(sp.source_pipeline_level as int) source_pipeline_level
+        , cast(p.process_level as int) process_level
 
         , e2.id src_server_id
-        , e2."NAME" src_server
+        , e2.server_name src_server
         , d2.id src_db_id
         , d2.db_name src_db
-        , a.source_table src_table
+        , src_t.id src_table_id
+        , src_t.table_name src_table
 
         , e1.id tgt_server_id
-        , e1."NAME" tgt_server
+        , e1.server_name tgt_server
         , d1.id tgt_db_id
         , d1.db_name tgt_db
-        , a.target_table tgt_table
+        , tgt_t.id tgt_table_id
+        , tgt_t.table_name tgt_table
 
-        , a."NAME" process_name
+    from processes p 
 
-    from process a
+        join source_pipelines sp 
+        on sp.id = p.source_pipeline_id
 
-        join source_pipeline g
-        on g.id = a.source_pipeline_id
-        and g.active = 1
+	        join data_source_layers dsl
+	        on dsl.id = sp.source_layer_id
+	        and dsl.active = 1
+	
+		        join data_sources ds
+		        on ds.id = dsl.source_id
+		        and ds.scheduled =1
+		        and ds.active =1
+		
+			        join layers l
+			        on l.id = dsl.layer_id
+			        and l.active = 1
 
-        join data_source b
-        on b.id = g.source_id
-        and b.active = 1
-        and b.scheduled = 1
+        join pipelines pl    
+        on pl.id = sp.pipeline_id
+        and pl.active = 1
 
-        join layer_pipeline h
-        on h.id = g.layer_pipeline_id
+	        join all_tables tgt_t
+	        on tgt_t.id = pl.tgt_table_id
+	
+		        join db d1
+		        on d1.id = tgt_t.db_id
+		
+			        join servers e1
+			        on e1.id = d1.server_id
 
-        join pipeline c        
-        on c.id = h.pipeline_id
-        and c.active = 1
+	        join all_tables src_t
+	        on src_t.id = pl.src_table_id
+	        
+		        join db d2
+		        on d2.id = src_t.db_id
+	
+			        join servers e2
+			        on e2.id = d2.server_id
 
-        join db d1
-        on d1.id = c.tgt_db_id
-
-        join server e1
-        on e1.id = d1.server_id
-
-        join db d2
-        on d2.id = c.src_db_id
-
-        join server e2
-        on e2.id = d2.server_id
-
-        join layer f
-        on f.id = h.layer_id
-
-    where a.active = 1
+       
+    where p.active = 1
     order by source_level
         ,layer_level
-        ,layer_pipeline_level
+        ,data_source_layer_level
         ,source_pipeline_level
         ,process_level
+
     """
 
 SOURCE_LOADS = """ 
@@ -117,14 +127,6 @@ SOURCE_LOADS = """
             """
 
 
-# ELT_PROCESS_VIEW = """ select * from elt_process_view """
-def exec_query(query, engine):
-    try:
-        return pd.read_sql_query(query, con=engine)
-    except:
-        print("Booom!!!!", query)
-
-
 def Logging_decorator(function):
     @functools.wraps(function)
     def wrapper(*args, **kwargs):
@@ -136,6 +138,17 @@ def Logging_decorator(function):
     return wrapper
 
 
+# ELT_PROCESS_VIEW = """ select * from elt_process_view """
+
+@Logging_decorator
+def exec_query(query, engine):
+    try:
+        return pd.read_sql_query(query, con=engine)
+    except:
+        print("Booom!!!!", query)
+
+
+@Logging_decorator
 def add_obj_to_dic(obj, i_dic):
     if obj.id not in i_dic:
         i_dic[obj.id] = obj
@@ -153,7 +166,7 @@ def replace_nan(df, replace_with):
     return df.replace(np.nan, replace_with, regex=True)
 
 
-def threads(iterator, target_func,max_workers=None):
+def threads(iterator, target_func, max_workers=None):
     #     for i in iterator:
     #         target_func(i)
     ################################################################################

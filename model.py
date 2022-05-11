@@ -1,17 +1,6 @@
 from functions import *
 
 
-class Layer:
-    def __init__(self, _id: str, abbrev: str, level: int):
-        self._id = _id
-        self.abbrev = abbrev
-        self.level = level
-
-    @property
-    def id(self):
-        return self._id
-
-
 class DataSource:
     def __init__(self, _id: str, name: str, level: int):
         self.process_failed = False
@@ -30,6 +19,29 @@ class DataSource:
         filter_load_id = ""
         df_loads = exec_query(SOURCE_LOADS.format(self._id, filter_load_id), engine)
         return df_loads
+
+
+class Layer:
+    def __init__(self, _id: str, abbrev: str, level: int):
+        self._id = _id
+        self.abbrev = abbrev
+        self.level = level
+
+    @property
+    def id(self):
+        return self._id
+
+
+class DataSourceLayer:
+    def __init__(self, _id: str, data_source: DataSource, layer: Layer, level: int):
+        self._id = _id
+        self.level = level
+        self.data_source = data_source
+        self.layer = layer
+
+    @property
+    def id(self):
+        return self._id
 
 
 class Server:
@@ -60,23 +72,22 @@ class Database:
         return self._id
 
 
-class Pipeline:
-    def __init__(self, _id: str, src_db: Database, tgt_db: Database):
+class Table:
+    def __init__(self, _id: str, database: Database, table_name: str):
         self._id = _id
-        self.tgt_db = tgt_db
-        self.src_db = src_db
+        self.database = database
+        self.table_name = table_name
 
     @property
     def id(self):
         return self._id
 
 
-class LayerPipeline:
-    def __init__(self, _id: str, layer: Layer, pipeline: Pipeline, level: int):
+class Pipeline:
+    def __init__(self, _id: str, src_table: Table, tgt_table: Table):
         self._id = _id
-        self.layer = layer
-        self.pipeline = pipeline
-        self.level = level
+        self.src_table = src_table
+        self.tgt_table = tgt_table
 
     @property
     def id(self):
@@ -84,12 +95,11 @@ class LayerPipeline:
 
 
 class SourcePipeline:
-    def __init__(self, _id: str, layer_pipeline: LayerPipeline, data_source: DataSource, level: int):
+    def __init__(self, _id: str, pipeline: Pipeline, data_source_layer: DataSourceLayer, level: int):
         self._id = _id
-        self.data_source = data_source
-        self.layer_pipeline = layer_pipeline
+        self.pipeline = pipeline
+        self.data_source_layer = data_source_layer
         self.level = level
-
 
     @property
     def id(self):
@@ -97,20 +107,17 @@ class SourcePipeline:
 
 
 class Process:
-    def __init__(self, _id: str, name: str, source_pipeline: SourcePipeline, source_table: str, target_table: str, apply_type: str, process_type: str, level: int):
+    def __init__(self, _id: str, name: str, source_pipeline: SourcePipeline, apply_type: str, process_type: str, level: int):
         self._id = _id
         self.name = name
         self.source_pipeline = source_pipeline
         self.process_type = process_type
-        self.process_type = process_type
         self.apply_type = apply_type
-        self.source_table = source_table
-        self.target_table = target_table
         self.level = level
         self.passed = None
 
     def run(self, run_id):
-        current_load_id = self.source_pipeline.data_source.current_load_id
+        current_load_id = self.source_pipeline.data_source_layer.data_source.current_load_id
         # **********************************************************************#
         # check for the process status in the last run
         # instead of sleep(n), call the DB procedure, to run the process
@@ -121,11 +128,11 @@ class Process:
         if return_code == 0:
             self.passed = True
         else:
-            self.source_pipeline.data_source.process_failed = True
+            self.source_pipeline.data_source_layer.data_source.process_failed = True
             self.passed = False
         # **********************************************************************#
-        source_id = self.source_pipeline.data_source.id
-        layer_id = self.source_pipeline.layer_pipeline.layer.id
+        source_id = self.source_pipeline.data_source_layer.data_source.id
+        layer_id = self.source_pipeline.data_source_layer.layer.id
 
         print('Result:{} - {}'.format(return_code, return_msg)
               , 'Source: {}'.format(source_id)
