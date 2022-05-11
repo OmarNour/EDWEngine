@@ -89,7 +89,7 @@ class SourcePipeline:
         self.data_source = data_source
         self.layer_pipeline = layer_pipeline
         self.level = level
-        # self.processes = []
+
 
     @property
     def id(self):
@@ -98,7 +98,6 @@ class SourcePipeline:
 
 class Process:
     def __init__(self, _id: str, name: str, source_pipeline: SourcePipeline, source_table: str, target_table: str, apply_type: str, process_type: str, level: int):
-        self.run_id = None
         self._id = _id
         self.name = name
         self.source_pipeline = source_pipeline
@@ -108,10 +107,10 @@ class Process:
         self.source_table = source_table
         self.target_table = target_table
         self.level = level
-        self.last_load_id = None
         self.passed = None
 
-    def run(self):
+    def run(self, run_id):
+        current_load_id = self.source_pipeline.data_source.current_load_id
         # **********************************************************************#
         # check for the process status in the last run
         # instead of sleep(n), call the DB procedure, to run the process
@@ -122,6 +121,7 @@ class Process:
         if return_code == 0:
             self.passed = True
         else:
+            self.source_pipeline.data_source.process_failed = True
             self.passed = False
         # **********************************************************************#
         source_id = self.source_pipeline.data_source.id
@@ -129,7 +129,7 @@ class Process:
 
         print('Result:{} - {}'.format(return_code, return_msg)
               , 'Source: {}'.format(source_id)
-              , 'Load: {}'.format(self.last_load_id)
+              , 'Load: {}'.format(current_load_id)
               , 'Layer: {}'.format(layer_id)
               , 'Process: {}'.format(self._id), sep='\t')
 
