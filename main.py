@@ -114,8 +114,8 @@ class ETLRun:
     @Logging_decorator
     def run_source(self, i_data_source: DataSource):
 
-        def wait_for_result(i_target_table_id, process):
-            while process in self.global_target_table[i_target_table_id]:
+        def wait_for_result(i_target_table_id, process_id):
+            while process_id in self.global_target_table[i_target_table_id]:
                 pass
 
         def send_to_run(i_target_table_id):
@@ -164,14 +164,17 @@ class ETLRun:
         self.end_time = time.time()
         self.time_elapsed = self.end_time - self.start_time
 
+    @Logging_decorator
+    def run_target_table(self, i_target_table):
+        for process_id in self.global_target_table[i_target_table]:
+            self.run_process(process_id)
+
+    @Logging_decorator
     def run_target_table_processes(self):
-        def run_target_table(i_target_table):
-            for process_id in self.global_target_table[i_target_table]:
-                self.run_process(process_id)
-
         while self.end_time is None:
-            threads(iterator=self.global_target_table.keys(), target_func=run_target_table, max_workers=None)
+            threads(iterator=self.global_target_table.keys(), target_func=self.run_target_table, max_workers=None)
 
+    @Logging_decorator
     def run(self, run_seq):
         if run_seq == 0:
             self.run_target_table_processes()
@@ -179,6 +182,7 @@ class ETLRun:
         if run_seq == 1:
             self.run_all_sources()
 
+    @Logging_decorator
     def main(self):
         threads(iterator=[0, 1], target_func=x.run, max_workers=None)
         print(f"RunID: {self.run_id}, time_elapsed: {self.time_elapsed}")
