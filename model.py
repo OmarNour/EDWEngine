@@ -12,15 +12,16 @@ class DataSource:
         self.level = level
         self.all_levels = {}
         self.current_load_id = None
+        self.current_batch_seq = 0
 
     @property
     def id(self):
         return self._id
 
     @Logging_decorator
-    def get_loads(self, engine) -> pd.DataFrame:
+    def get_loads(self, engine, start_from_batch) -> pd.DataFrame:
         filter_load_id = ""
-        df_loads = exec_query(SOURCE_LOADS.format(src_id=self._id, exclude_loads=filter_load_id), engine)
+        df_loads = exec_query(SOURCE_LOADS.format(src_id=self._id, exclude_loads=filter_load_id, current_batch_seq=start_from_batch), engine)
         return df_loads
 
 

@@ -109,9 +109,12 @@ class ETLRun:
     def passed_last_run(self, process_id, current_load):
         try:
             last_p = self.last_run.get_process(process_id)
-            if last_p.source_pipeline.data_source_layer.data_source.current_load_id == current_load:
-                if last_p.passed:
-                    return True
+            last_p_load_id = last_p.source_pipeline.data_source_layer.data_source.current_load_id
+
+            if last_p_load_id:
+                if last_p_load_id == current_load:
+                    if last_p.passed:
+                        return True
             return False
         except:
             return False
@@ -121,9 +124,11 @@ class ETLRun:
         p = self.get_process(process_id)
         load_id = p.source_pipeline.data_source_layer.data_source.current_load_id
         table_id = p.source_pipeline.pipeline.tgt_table.id
+
         if not self.passed_last_run(process_id, load_id):
             p.run(self.run_id)
         else:
+            # print(f"process {process_id}, already passed last run")
             p.passed = True
         self.global_target_table[table_id].remove(process_id)
 
@@ -141,10 +146,17 @@ class ETLRun:
                 self.global_target_table[i_target_table_id].append(process_id)
                 wait_for_result(i_target_table_id, process_id)
 
-        loads = i_data_source.get_loads(self.config_engine_name)
+        try:
+            start_from = self.last_run.registered_data_sources[i_data_source.id].current_batch_seq
+        except:
+            start_from = 0
+
+        loads = i_data_source.get_loads(self.config_engine_name, start_from)
         if not loads.empty:
             for row in loads.itertuples():
                 i_data_source.current_load_id = row.load_id
+                i_data_source.current_batch_seq = row.batch_seq
+
                 if not i_data_source.process_failed:
                     for level_of_layers in i_data_source.all_levels.keys():
                         if not i_data_source.process_failed:
@@ -223,5 +235,15 @@ if __name__ == '__main__':
     # run this in terminal id issue occurred related to libpq: "sudo ln -s /usr/lib/libpq.5.4.dylib /usr/lib/libpq.5.dylib"
     add_sql_engine(user=CONFIG_USER_ID, pw=CONFIG_PW, host=CONFIG_HOST, port=CONFIG_PORT, db=CONFIG_DB, engine_name=CONFIG_ENGINE_NAME)
     x = ETLRun(max_workers=None, config_engine_name=CONFIG_ENGINE_NAME)
-    # print(x.last_run)
+    #
+    # last_run = x.last_run
+    # for pid in last_run.registered_processes.keys():
+    #     last_p = last_run.get_process(pid)
+    #     ds = last_p.source_pipeline.data_source_layer.data_source.id
+    #     load_id = last_p.source_pipeline.data_source_layer.data_source.current_load_id
+    #     print(ds, load_id, pid,last_p.passed)
+    # Result:1 - :(	Source: ds3	Load: ACAEAD86	Layer: lyr6	Process: P16, P18
+    # Result:1 - :(	Source: ds4	Load: 753BBFD3	Layer: lyr3	Process: P26
+    # Result:1 - :(	Source: ds2	Load: 854CABD3	Layer: lyr3	Process: P45
+
     x.main()

@@ -120,12 +120,12 @@ SOURCE_LOADS = """
                 join data_sources y 
                 on upper(x.source_name) = upper(y.source_name)
                 and y.id = '{src_id}'
-
                 {exclude_loads} -- exclude processed loads
                 group by source_id, load_id
             )
             select x.* 
             from t1 x
+            where batch_seq >= {current_batch_seq}
             order by x.batch_seq
             """
 
