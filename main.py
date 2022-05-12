@@ -110,10 +110,10 @@ class ETLRun:
     @Logging_decorator
     def run_source(self, i_data_source: DataSource):
 
-        def send_to_global_target_table(i_target_table):
-            for process in target_table_dic[i_target_table]:
-                self.global_target_table[i_target_table].append(process)
-                while process in self.global_target_table[i_target_table]:
+        def send_to_global_target_table(i_target_table_id):
+            for process in target_table_dic[i_target_table_id]:
+                self.global_target_table[i_target_table_id].append(process)
+                while process in self.global_target_table[i_target_table_id]:
                     pass
 
         loads = i_data_source.get_loads(self.config_engine)
