@@ -82,7 +82,7 @@ class ETLRun:
                 ds.all_levels[layer_level][ds_layer_level][source_pipeline_level][process_level][target_table_id] = []
 
             if process not in ds.all_levels[layer_level][ds_layer_level][source_pipeline_level][process_level][target_table_id]:
-                ds.all_levels[layer_level][ds_layer_level][source_pipeline_level][process_level][target_table_id].append(process)
+                ds.all_levels[layer_level][ds_layer_level][source_pipeline_level][process_level][target_table_id].append(process.id)
 
             if ds_level not in self.execution_plan:
                 self.execution_plan[ds_level] = []
@@ -100,21 +100,28 @@ class ETLRun:
             self.register_process(df_row)
 
     #######################################################################################
+    def get_process(self, process_id) -> Process:
+        return self.registered_processes[process_id]
+
     @Logging_decorator
-    def run_process(self, p: Process):
+    def run_process(self, process_id):
+        p = self.get_process(process_id)
         p.run(self.run_id)
-        self.global_target_table[p.source_pipeline.pipeline.tgt_table.id].remove(p)
+        self.global_target_table[p.source_pipeline.pipeline.tgt_table.id].remove(p.id)
 
     #######################################################################################
 
     @Logging_decorator
     def run_source(self, i_data_source: DataSource):
 
-        def send_to_global_target_table(i_target_table_id):
-            for process in target_table_dic[i_target_table_id]:
-                self.global_target_table[i_target_table_id].append(process)
-                while process in self.global_target_table[i_target_table_id]:
-                    pass
+        def wait_for_result(i_target_table_id, process):
+            while process in self.global_target_table[i_target_table_id]:
+                pass
+
+        def send_to_run(i_target_table_id):
+            for process_id in target_table_dic[i_target_table_id]:
+                self.global_target_table[i_target_table_id].append(process_id)
+                wait_for_result(i_target_table_id, process_id)
 
         loads = i_data_source.get_loads(self.config_engine)
         if not loads.empty:
@@ -133,7 +140,7 @@ class ETLRun:
                                             for level_of_process in process_dic.keys():
                                                 if not i_data_source.process_failed:
                                                     target_table_dic = process_dic[level_of_process]
-                                                    threads(iterator=target_table_dic.keys(), target_func=send_to_global_target_table, max_workers=self.max_workers)
+                                                    threads(iterator=target_table_dic.keys(), target_func=send_to_run, max_workers=self.max_workers)
             self.source_failed = i_data_source.process_failed
 
     @Logging_decorator
@@ -159,8 +166,8 @@ class ETLRun:
 
     def run_target_table_processes(self):
         def run_target_table(i_target_table):
-            for process in self.global_target_table[i_target_table]:
-                self.run_process(process)
+            for process_id in self.global_target_table[i_target_table]:
+                self.run_process(process_id)
 
         while self.end_time is None:
             threads(iterator=self.global_target_table.keys(), target_func=run_target_table, max_workers=None)
@@ -174,7 +181,7 @@ class ETLRun:
 
     def main(self):
         threads(iterator=[0, 1], target_func=x.run, max_workers=None)
-        print("time_elapsed:", self.time_elapsed)
+        print(f"RunID: {self.run_id}, time_elapsed: {self.time_elapsed}")
 
 
 ##################################################################################################################

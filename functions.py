@@ -22,7 +22,7 @@ pp = pprint.PrettyPrinter(depth=4)
 FAILED_SUCCESS = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
     , 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
     , 0, 0, 0, 0, 0, 0, 0, 1, 0]
-FAILED_SUCCESS = [0]
+# FAILED_SUCCESS = [0]
 
 ELT_PROCESS_VIEW = """ 
     select 
@@ -119,9 +119,9 @@ SOURCE_LOADS = """
                 from data_source_load x
                 join data_sources y 
                 on upper(x.source_name) = upper(y.source_name)
-                and y.id = '{}'
+                and y.id = '{src_id}'
 
-                {} -- exclude processed loads
+                {exclude_loads} -- exclude processed loads
                 group by source_id, load_id
             )
             select x.* 

@@ -20,7 +20,7 @@ class DataSource:
     @Logging_decorator
     def get_loads(self, engine) -> pd.DataFrame:
         filter_load_id = ""
-        df_loads = exec_query(SOURCE_LOADS.format(self._id, filter_load_id), engine)
+        df_loads = exec_query(SOURCE_LOADS.format(src_id=self._id, exclude_loads=filter_load_id), engine)
         return df_loads
 
 
@@ -118,6 +118,10 @@ class Process:
         self.apply_type = apply_type
         self.level = level
         self.passed = None
+
+    @property
+    def id(self):
+        return self._id
 
     def run(self, run_id):
         current_load_id = self.source_pipeline.data_source_layer.data_source.current_load_id
