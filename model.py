@@ -1,6 +1,9 @@
+import pandas as pd
+
 from functions import *
 
 
+# ERD: https://lucid.app/lucidchart/b806d35b-7360-43cd-80e5-e51c5d64c7c5/edit?page=0_0&invitationId=inv_ed4c6708-54d4-47f3-bb5c-51aefa3f8199#
 class DataSource:
     def __init__(self, _id: str, name: str, level: int):
         self.process_failed = False
@@ -15,7 +18,7 @@ class DataSource:
         return self._id
 
     @Logging_decorator
-    def get_loads(self, engine):
+    def get_loads(self, engine) -> pd.DataFrame:
         filter_load_id = ""
         df_loads = exec_query(SOURCE_LOADS.format(self._id, filter_load_id), engine)
         return df_loads

@@ -51,11 +51,11 @@ class ETLRun:
 
     def prepare_execution_plan(self):
         for process in self.registered_processes.values():
-            target_table = process.source_pipeline.pipeline.tgt_table
-            process_level = process.level
-
             source_pipeline = process.source_pipeline
             source_pipeline_level = source_pipeline.level
+
+            target_table_id = source_pipeline.pipeline.tgt_table.id
+            process_level = process.level
 
             ds_layer = source_pipeline.data_source_layer
             ds_layer_level = ds_layer.level
@@ -78,11 +78,11 @@ class ETLRun:
             if process_level not in ds.all_levels[layer_level][ds_layer_level][source_pipeline_level]:
                 ds.all_levels[layer_level][ds_layer_level][source_pipeline_level][process_level] = {}
 
-            if target_table not in ds.all_levels[layer_level][ds_layer_level][source_pipeline_level][process_level]:
-                ds.all_levels[layer_level][ds_layer_level][source_pipeline_level][process_level][target_table] = []
+            if target_table_id not in ds.all_levels[layer_level][ds_layer_level][source_pipeline_level][process_level]:
+                ds.all_levels[layer_level][ds_layer_level][source_pipeline_level][process_level][target_table_id] = []
 
-            if process not in ds.all_levels[layer_level][ds_layer_level][source_pipeline_level][process_level][target_table]:
-                ds.all_levels[layer_level][ds_layer_level][source_pipeline_level][process_level][target_table].append(process)
+            if process not in ds.all_levels[layer_level][ds_layer_level][source_pipeline_level][process_level][target_table_id]:
+                ds.all_levels[layer_level][ds_layer_level][source_pipeline_level][process_level][target_table_id].append(process)
 
             if ds_level not in self.execution_plan:
                 self.execution_plan[ds_level] = []
@@ -90,8 +90,8 @@ class ETLRun:
             if ds not in self.execution_plan[ds_level]:
                 self.execution_plan[ds_level].append(ds)
 
-            if target_table not in self.global_target_table:
-                self.global_target_table[target_table] = []
+            if target_table_id not in self.global_target_table:
+                self.global_target_table[target_table_id] = []
 
     @Logging_decorator
     def register_all_processes(self):
@@ -103,7 +103,7 @@ class ETLRun:
     @Logging_decorator
     def run_process(self, p: Process):
         p.run(self.run_id)
-        self.global_target_table[p.target_table].remove(p)
+        self.global_target_table[p.source_pipeline.pipeline.tgt_table.id].remove(p)
 
     #######################################################################################
 
@@ -117,7 +117,7 @@ class ETLRun:
                     pass
 
         loads = i_data_source.get_loads(self.config_engine)
-        if loads:
+        if not loads.empty:
             for row in loads.itertuples():
                 i_data_source.current_load_id = row.load_id
                 if not i_data_source.process_failed:
@@ -181,5 +181,5 @@ class ETLRun:
 ##################################################################################################################
 if __name__ == '__main__':
     # run this in terminal id issue occurred related to libpq: "sudo ln -s /usr/lib/libpq.5.4.dylib /usr/lib/libpq.5.dylib"
-    x = ETLRun()
+    x = ETLRun(max_workers=None, config_user_id="postgres", config_pw="postgres", config_db="config_db", host="localhost", port=5432)
     x.main()

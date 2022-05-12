@@ -114,8 +114,8 @@ SOURCE_LOADS = """
             (
                 select y.id source_id, x.load_id , min(cast(x.batch_id as int)) batch_seq
                 from data_source_load x
-                join data_source y 
-                on upper(x.source_name) = upper(y."NAME")
+                join data_sources y 
+                on upper(x.source_name) = upper(y.source_name)
                 and y.id = '{}'
 
                 {} -- exclude processed loads
@@ -146,6 +146,7 @@ def exec_query(query, engine):
         return pd.read_sql_query(query, con=engine)
     except:
         print("Booom!!!!", query)
+        print(traceback.format_exc())
 
 
 @Logging_decorator
