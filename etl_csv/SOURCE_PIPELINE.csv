@@ -1,9 +1,0 @@
-﻿ID,SOURCE_ID,LAYER_PIPELINE_ID,LEVEL,ACTIVE
-srcLp1,ds1,lyrP3,0,1
-srcLp2,ds1,lyrP5,0,1
-srcLp3,ds2,lyrP3,0,1
-srcLp4,ds2,lyrP5,0,1
-srcLp5,ds3,lyrP3,0,1
-srcLp6,ds3,lyrP5,0,1
-srcLp7,ds4,lyrP3,0,1
-srcLp8,ds4,lyrP5,0,1
