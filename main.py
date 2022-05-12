@@ -186,6 +186,8 @@ class ETLRun:
 
 ##################################################################################################################
 if __name__ == '__main__':
+    # TODO:
+    #   add concurrency parameter to be passed to max_worker parameter
     # run this in terminal id issue occurred related to libpq: "sudo ln -s /usr/lib/libpq.5.4.dylib /usr/lib/libpq.5.dylib"
     x = ETLRun(max_workers=None, config_user_id="postgres", config_pw="postgres", config_db="config_db", host="localhost", port=5432)
     x.main()
