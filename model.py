@@ -126,9 +126,10 @@ class Process:
     def run(self, run_id):
         current_load_id = self.source_pipeline.data_source_layer.data_source.current_load_id
         # **********************************************************************#
-        # check for the process status in the last run
-        # instead of sleep(n), call the DB procedure, to run the process
+        # TODO:
+        #   instead of sleep(n), call the DB procedure, to run the process
         #
+
         sleep(1)
         return_code = choice(FAILED_SUCCESS)
         return_msg = ":)" if return_code == 0 else ":("
