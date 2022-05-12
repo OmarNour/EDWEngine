@@ -133,6 +133,13 @@ class ETLRun:
         self.global_target_table[table_id].remove(process_id)
 
     #######################################################################################
+    def get_last_batch_id(self, i_source_id):
+        try:
+            start_from = self.last_run.registered_data_sources[i_source_id].current_batch_seq
+        except:
+            start_from = 0
+
+        return start_from
 
     @Logging_decorator
     def run_source(self, i_data_source: DataSource):
@@ -146,12 +153,8 @@ class ETLRun:
                 self.global_target_table[i_target_table_id].append(process_id)
                 wait_for_result(i_target_table_id, process_id)
 
-        try:
-            start_from = self.last_run.registered_data_sources[i_data_source.id].current_batch_seq
-        except:
-            start_from = 0
-
-        loads = i_data_source.get_loads(self.config_engine_name, start_from)
+        start_from_batch_id = self.get_last_batch_id(i_data_source.id)
+        loads = i_data_source.get_loads(self.config_engine_name, start_from_batch_id)
         if not loads.empty:
             for row in loads.itertuples():
                 i_data_source.current_load_id = row.load_id
