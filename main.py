@@ -49,6 +49,7 @@ class ETLRun:
             process = Process(df_row.process_id, '', src_pipeline, df_row.apply_type, '', df_row.process_level)
             self.registered_processes[df_row.process_id] = process
 
+    @Logging_decorator
     def prepare_execution_plan(self):
         for process in self.registered_processes.values():
             source_pipeline = process.source_pipeline
