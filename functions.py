@@ -63,7 +63,8 @@ ELT_PROCESS_VIEW = """
 
         join source_pipelines sp 
         on sp.id = p.source_pipeline_id
-
+        and sp.active = 1
+        
 	        join data_source_layers dsl
 	        on dsl.id = sp.source_layer_id
 	        and dsl.active = 1
@@ -83,6 +84,7 @@ ELT_PROCESS_VIEW = """
 
 	        join all_tables tgt_t
 	        on tgt_t.id = pl.tgt_table_id
+	        and tgt_t.active = 1
 	
 		        join db d1
 		        on d1.id = tgt_t.db_id
@@ -92,6 +94,7 @@ ELT_PROCESS_VIEW = """
 
 	        join all_tables src_t
 	        on src_t.id = pl.src_table_id
+	        and src_t.active = 1
 	        
 		        join db d2
 		        on d2.id = src_t.db_id
