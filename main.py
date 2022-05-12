@@ -164,7 +164,6 @@ class ETLRun:
 
         while self.end_time is None:
             threads(iterator=self.global_target_table.keys(), target_func=run_target_table, max_workers=None)
-            # run_target_table()
 
     def run(self, run_seq):
         if run_seq == 0:
