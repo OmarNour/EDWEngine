@@ -144,14 +144,14 @@ class ETLRun:
     @Logging_decorator
     def run_source(self, i_data_source: DataSource):
 
-        def wait_for_result(i_target_table_id, process_id):
+        def wait_to_complete(i_target_table_id, process_id):
             while process_id in self.global_target_table[i_target_table_id]:
                 pass
 
         def send_to_run(i_target_table_id):
             for process_id in target_table_dic[i_target_table_id]:
                 self.global_target_table[i_target_table_id].append(process_id)
-                wait_for_result(i_target_table_id, process_id)
+                wait_to_complete(i_target_table_id, process_id)
 
         start_from_batch_id = self.get_last_batch_id(i_data_source.id)
         loads = i_data_source.get_loads(self.config_engine_name, start_from_batch_id)
