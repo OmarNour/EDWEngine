@@ -135,11 +135,11 @@ class ETLRun:
     #######################################################################################
     def get_last_batch_id(self, i_source_id):
         try:
-            start_from = self.last_run.registered_data_sources[i_source_id].current_batch_seq
+            return self.last_run.registered_data_sources[i_source_id].current_batch_seq
         except:
-            start_from = 0
+            return 0
 
-        return start_from
+
 
     @Logging_decorator
     def run_source(self, i_data_source: DataSource):
