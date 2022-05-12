@@ -129,6 +129,14 @@ SOURCE_LOADS = """
             order by x.batch_seq
             """
 
+CONFIG_ENGINE_NAME = "config_db"
+CONFIG_USER_ID = "postgres"
+CONFIG_PW = "postgres"
+CONFIG_DB = "config_db"
+CONFIG_HOST = "localhost"
+CONFIG_PORT = 5432
+SQL_ENGINE_DIC = {}
+
 
 def Logging_decorator(function):
     @functools.wraps(function)
@@ -142,9 +150,14 @@ def Logging_decorator(function):
 
 
 # ELT_PROCESS_VIEW = """ select * from elt_process_view """
+@Logging_decorator
+def add_sql_engine(user, pw, host, port, db, engine_name):
+    add_obj_to_dic(create_engine(f'postgresql://{user}:{pw}@{host}:{port}/{db}'), SQL_ENGINE_DIC, engine_name)
+
 
 @Logging_decorator
-def exec_query(query, engine):
+def exec_query(query, engine_name):
+    engine = SQL_ENGINE_DIC[engine_name]
     try:
         return pd.read_sql_query(query, con=engine)
     except:
@@ -153,11 +166,16 @@ def exec_query(query, engine):
 
 
 @Logging_decorator
-def add_obj_to_dic(obj, i_dic):
-    if obj.id not in i_dic:
-        i_dic[obj.id] = obj
+def add_obj_to_dic(obj, i_dic, key=None):
+    if key is None:
+        obj_key = obj.id
     else:
-        obj = i_dic[obj.id]
+        obj_key = key
+
+    if obj_key not in i_dic:
+        i_dic[obj_key] = obj
+    else:
+        obj = i_dic[obj_key]
     return obj
 
 
@@ -177,6 +195,7 @@ def threads(iterator, target_func, max_workers=None):
     with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
         executor.map(target_func, iterator)
 
+
 ################################################################################
 #     threads = []
 
@@ -187,3 +206,17 @@ def threads(iterator, target_func, max_workers=None):
 
 #     [thread.join() for thread in threads]
 ################################################################################
+
+def get_files_in_dir(path, ext="", file_name=None):
+    full_file_name = file_name + "." + ext if file_name is not None else None
+    files = [name for name in os.listdir(path) if "." + ext in name
+             and "~$" not in name
+             and os.path.isfile(os.path.join(path, name))
+             and (name == full_file_name or full_file_name is None)
+             ]
+
+    return files
+
+
+def generate_run_id():
+    return int(str(time.time()).replace('.', ''))

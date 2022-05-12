@@ -111,6 +111,7 @@ class SourcePipeline:
 
 class Process:
     def __init__(self, _id: str, name: str, source_pipeline: SourcePipeline, apply_type: str, process_type: str, level: int):
+
         self._id = _id
         self.name = name
         self.source_pipeline = source_pipeline
@@ -124,7 +125,7 @@ class Process:
         return self._id
 
     def run(self, run_id):
-        current_load_id = self.source_pipeline.data_source_layer.data_source.current_load_id
+        load_id = self.source_pipeline.data_source_layer.data_source.current_load_id
         # **********************************************************************#
         # TODO:
         #   instead of sleep(n), call the DB procedure, to run the process
@@ -144,7 +145,7 @@ class Process:
 
         print('Result:{} - {}'.format(return_code, return_msg)
               , 'Source: {}'.format(source_id)
-              , 'Load: {}'.format(current_load_id)
+              , 'Load: {}'.format(load_id)
               , 'Layer: {}'.format(layer_id)
               , 'Process: {}'.format(self._id), sep='\t')
 

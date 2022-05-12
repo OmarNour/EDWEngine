@@ -2,12 +2,13 @@ from model import *
 
 
 class ETLRun:
-    def __init__(self, max_workers=None, config_user_id="postgres", config_pw="postgres", config_db="config_db", host="localhost", port=5432):
+    def __init__(self, working_dir="data/", max_workers=None, config_engine_name=""):
+        self.working_dir = working_dir
         self.registered_ds_layers = {}
         self.registered_tgt_tbls = {}
         self.registered_src_tbls = {}
         self.max_workers = max_workers
-        self.run_id = None
+        self.run_id = generate_run_id()
         self.start_time = None
         self.end_time = None
         self.time_elapsed = None
@@ -24,7 +25,8 @@ class ETLRun:
         self.registered_src_pipelines = {}
         self.registered_processes = {}
         self.global_target_table = {}
-        self.config_engine = create_engine(f'postgresql://{config_user_id}:{config_pw}@{host}:{port}/{config_db}')
+        self.config_engine_name = config_engine_name
+        self.last_run = self.__deserialize()
 
     @Logging_decorator
     def register_process(self, df_row):
@@ -96,7 +98,7 @@ class ETLRun:
 
     @Logging_decorator
     def register_all_processes(self):
-        df = exec_query(ELT_PROCESS_VIEW, self.config_engine)
+        df = exec_query(ELT_PROCESS_VIEW, self.config_engine_name)
         for df_row in df.itertuples():
             self.register_process(df_row)
 
@@ -104,11 +106,26 @@ class ETLRun:
     def get_process(self, process_id) -> Process:
         return self.registered_processes[process_id]
 
+    def passed_last_run(self, process_id, current_load):
+        try:
+            last_p = self.last_run.get_process(process_id)
+            if last_p.source_pipeline.data_source_layer.data_source.current_load_id == current_load:
+                if last_p.passed:
+                    return True
+            return False
+        except:
+            return False
+
     @Logging_decorator
     def run_process(self, process_id):
         p = self.get_process(process_id)
-        p.run(self.run_id)
-        self.global_target_table[p.source_pipeline.pipeline.tgt_table.id].remove(p.id)
+        load_id = p.source_pipeline.data_source_layer.data_source.current_load_id
+        table_id = p.source_pipeline.pipeline.tgt_table.id
+        if not self.passed_last_run(process_id, load_id):
+            p.run(self.run_id)
+        else:
+            p.passed = True
+        self.global_target_table[table_id].remove(process_id)
 
     #######################################################################################
 
@@ -124,7 +141,7 @@ class ETLRun:
                 self.global_target_table[i_target_table_id].append(process_id)
                 wait_for_result(i_target_table_id, process_id)
 
-        loads = i_data_source.get_loads(self.config_engine)
+        loads = i_data_source.get_loads(self.config_engine_name)
         if not loads.empty:
             for row in loads.itertuples():
                 i_data_source.current_load_id = row.load_id
@@ -145,15 +162,10 @@ class ETLRun:
             self.source_failed = i_data_source.process_failed
 
     @Logging_decorator
-    def generate_run_id(self):
-        self.run_id = int(str(time.time()).replace('.', ''))
-
-    @Logging_decorator
     def run_all_sources(self):
         if not self.end_time:
             self.start_time = time.time() if self.start_time is None else self.start_time
 
-            self.generate_run_id()
             self.register_all_processes()
             self.prepare_execution_plan()
 
@@ -173,10 +185,10 @@ class ETLRun:
     @Logging_decorator
     def run_target_table_processes(self):
         while self.end_time is None:
-            threads(iterator=self.global_target_table.keys(), target_func=self.run_target_table, max_workers=None)
+            threads(iterator=list(self.global_target_table.keys()), target_func=self.run_target_table, max_workers=None)
 
     @Logging_decorator
-    def run(self, run_seq):
+    def run_engine(self, run_seq):
         if run_seq == 0:
             self.run_target_table_processes()
 
@@ -185,8 +197,22 @@ class ETLRun:
 
     @Logging_decorator
     def main(self):
-        threads(iterator=[0, 1], target_func=x.run, max_workers=None)
+        threads(iterator=[0, 1], target_func=x.run_engine, max_workers=None)
         print(f"RunID: {self.run_id}, time_elapsed: {self.time_elapsed}")
+        self.__serialize()
+
+    @Logging_decorator
+    def __serialize(self):
+        full_path = os.path.join('{}{}.pkl'.format(self.working_dir, self.run_id))
+        pickle.dump(self, open(full_path, 'wb'), protocol=pickle.HIGHEST_PROTOCOL)
+
+    @Logging_decorator
+    def __deserialize(self):
+        files = get_files_in_dir(path=self.working_dir, ext="pkl")
+        if files:
+            files.sort(reverse=True)
+            full_path = os.path.join("{}{}".format(self.working_dir, files[0]))
+            return pickle.load(open(full_path, 'rb'))
 
 
 ##################################################################################################################
@@ -195,5 +221,7 @@ if __name__ == '__main__':
     #   add concurrency parameter to be passed to max_worker parameter
     #   get the concurrency value for each level from the config db
     # run this in terminal id issue occurred related to libpq: "sudo ln -s /usr/lib/libpq.5.4.dylib /usr/lib/libpq.5.dylib"
-    x = ETLRun(max_workers=None, config_user_id="postgres", config_pw="postgres", config_db="config_db", host="localhost", port=5432)
+    add_sql_engine(user=CONFIG_USER_ID, pw=CONFIG_PW, host=CONFIG_HOST, port=CONFIG_PORT, db=CONFIG_DB, engine_name=CONFIG_ENGINE_NAME)
+    x = ETLRun(max_workers=None, config_engine_name=CONFIG_ENGINE_NAME)
+    # print(x.last_run)
     x.main()
