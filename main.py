@@ -5,7 +5,6 @@ class ETLRun:
 
     def __init__(self, working_dir="data/", max_workers=None):
         self.working_dir = working_dir
-
         self.max_workers = max_workers
         self.run_id = generate_run_id()
         self.start_time = None
