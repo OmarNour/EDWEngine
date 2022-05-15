@@ -104,11 +104,11 @@ ELT_PROCESS_VIEW = """
 
        
     where p.active = 1
-    order by source_level
+    /*order by source_level
         ,layer_level
         ,data_source_layer_level
         ,source_pipeline_level
-        ,process_level
+        ,process_level*/
 
     """
 
@@ -126,7 +126,7 @@ SOURCE_LOADS = """
             select x.* 
             from t1 x
             where batch_seq >= {current_batch_seq}
-            order by x.batch_seq
+            --order by x.batch_seq
             """
 
 CONFIG_ENGINE_NAME = "config_db"
@@ -156,13 +156,14 @@ def add_sql_engine(user, pw, host, port, db, engine_name):
 
 
 @Logging_decorator
-def exec_query(query, engine_name):
+def exec_query(query, engine_name) -> pd.DataFrame:
     engine = SQL_ENGINE_DIC[engine_name]
     try:
         return pd.read_sql_query(query, con=engine)
     except:
         print("Booom!!!!", query)
         print(traceback.format_exc())
+        return pd.DataFrame()
 
 
 @Logging_decorator
