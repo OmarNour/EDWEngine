@@ -4,9 +4,7 @@ from model import *
 class ETLRun:
     def __init__(self, working_dir="data/", max_workers=None):
         self.working_dir = working_dir
-        self.registered_ds_layers = {}
-        self.registered_tgt_tbls = {}
-        self.registered_src_tbls = {}
+
         self.max_workers = max_workers
         self.run_id = generate_run_id()
         self.start_time = None
@@ -14,37 +12,39 @@ class ETLRun:
         self.time_elapsed = None
         self.source_failed = False
         self.execution_plan = {}
-        self.registered_src_servers = {}
-        self.registered_src_dbs = {}
-        self.registered_tgt_servers = {}
-        self.registered_tgt_dbs = {}
-        self.registered_pipelines = {}
-        self.registered_data_sources = {}
-        self.registered_layers = {}
-        self.registered_layer_pipelines = {}
-        self.registered_src_pipelines = {}
         self.registered_processes = {}
         self.global_target_table = {}
         self.last_run = self.__deserialize()
 
     @Logging_decorator
     def register_process(self, df_row):
+        registered_src_servers = {}
+        registered_src_dbs = {}
+        registered_src_tbls = {}
+        registered_tgt_servers = {}
+        registered_tgt_dbs = {}
+        registered_tgt_tbls = {}
+        registered_ds_layers = {}
+        registered_pipelines = {}
+        registered_data_sources = {}
+        registered_layers = {}
+        registered_src_pipelines = {}
         # MAKE dic FOR EACH OBJECT TO AVOID DUPLICATING OBJECTS!
-        src_server = add_obj_to_dic(Server(df_row.src_server_id, df_row.src_server), self.registered_src_servers)
-        src_db = add_obj_to_dic(Database(df_row.src_db_id, src_server, df_row.src_db), self.registered_src_dbs)
-        src_tbl = add_obj_to_dic(Table(df_row.src_table_id, src_db, df_row.src_table), self.registered_src_tbls)
+        src_server = add_obj_to_dic(Server(df_row.src_server_id, df_row.src_server), registered_src_servers)
+        src_db = add_obj_to_dic(Database(df_row.src_db_id, src_server, df_row.src_db), registered_src_dbs)
+        src_tbl = add_obj_to_dic(Table(df_row.src_table_id, src_db, df_row.src_table), registered_src_tbls)
 
-        tgt_server = add_obj_to_dic(Server(df_row.tgt_server_id, df_row.tgt_server), self.registered_tgt_servers)
-        tgt_db = add_obj_to_dic(Database(df_row.tgt_db_id, tgt_server, df_row.tgt_db), self.registered_tgt_dbs)
-        tgt_tbl = add_obj_to_dic(Table(df_row.tgt_table_id, tgt_db, df_row.tgt_table), self.registered_tgt_tbls)
+        tgt_server = add_obj_to_dic(Server(df_row.tgt_server_id, df_row.tgt_server), registered_tgt_servers)
+        tgt_db = add_obj_to_dic(Database(df_row.tgt_db_id, tgt_server, df_row.tgt_db), registered_tgt_dbs)
+        tgt_tbl = add_obj_to_dic(Table(df_row.tgt_table_id, tgt_db, df_row.tgt_table), registered_tgt_tbls)
 
-        pipeline = add_obj_to_dic(Pipeline(df_row.pipeline_id, src_tbl, tgt_tbl), self.registered_pipelines)
+        pipeline = add_obj_to_dic(Pipeline(df_row.pipeline_id, src_tbl, tgt_tbl), registered_pipelines)
 
-        ds = add_obj_to_dic(DataSource(df_row.source_id, df_row.source_name, df_row.source_level), self.registered_data_sources)
-        layer = add_obj_to_dic(Layer(df_row.layer_id, df_row.layer_name, df_row.layer_level), self.registered_layers)
-        ds_layer = add_obj_to_dic(DataSourceLayer(df_row.source_layer_id, ds, layer, df_row.data_source_layer_level), self.registered_ds_layers)
+        ds = add_obj_to_dic(DataSource(df_row.source_id, df_row.source_name, df_row.source_level), registered_data_sources)
+        layer = add_obj_to_dic(Layer(df_row.layer_id, df_row.layer_name, df_row.layer_level), registered_layers)
+        ds_layer = add_obj_to_dic(DataSourceLayer(df_row.source_layer_id, ds, layer, df_row.data_source_layer_level), registered_ds_layers)
 
-        src_pipeline = add_obj_to_dic(SourcePipeline(df_row.source_pipeline_id, pipeline, ds_layer, df_row.source_pipeline_level), self.registered_src_pipelines)
+        src_pipeline = add_obj_to_dic(SourcePipeline(df_row.source_pipeline_id, pipeline, ds_layer, df_row.source_pipeline_level), registered_src_pipelines)
 
         if df_row.process_id not in self.registered_processes:
             process = Process(df_row.process_id, '', src_pipeline, df_row.apply_type, '', df_row.process_level)
@@ -97,7 +97,7 @@ class ETLRun:
 
     @Logging_decorator
     def register_all_processes(self):
-        df = exec_query(ELT_PROCESS_VIEW, CONFIG_ENGINE_NAME)
+        df = exec_query(ELT_PROCESS_VIEW, CONFIG_ENGINE_NAME).sort_values(['source_level','layer_level','data_source_layer_level','source_pipeline_level','process_level'])
         for df_row in df.itertuples():
             self.register_process(df_row)
 
