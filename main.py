@@ -209,6 +209,7 @@ class ETLRun:
 
     @Logging_decorator
     def main(self):
+        add_sql_engine(user=CONFIG_USER_ID, pw=CONFIG_PW, host=CONFIG_HOST, port=CONFIG_PORT, db=CONFIG_DB, engine_name=CONFIG_ENGINE_NAME)
         threads(iterator=[0, 1], target_func=x.run_engine, max_workers=None)
         print(f"RunID: {self.run_id}, time_elapsed: {self.time_elapsed}")
         self.__serialize()
@@ -233,6 +234,6 @@ if __name__ == '__main__':
     #   add concurrency parameter to be passed to max_worker parameter
     #   get the concurrency value for each level from the config db
     # run this in terminal id issue occurred related to libpq: "sudo ln -s /usr/lib/libpq.5.4.dylib /usr/lib/libpq.5.dylib"
-    add_sql_engine(user=CONFIG_USER_ID, pw=CONFIG_PW, host=CONFIG_HOST, port=CONFIG_PORT, db=CONFIG_DB, engine_name=CONFIG_ENGINE_NAME)
+
     x = ETLRun(max_workers=None)
     x.main()
