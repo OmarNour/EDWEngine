@@ -3,8 +3,8 @@ from model import *
 
 class ETLRun:
 
-    def __init__(self, working_dir="data/", max_workers=None):
-        self.working_dir = working_dir
+    def __init__(self, log_dir, max_workers):
+        self.log_dir = log_dir
         self.max_workers = max_workers
         self.run_id = generate_run_id()
         self.start_time = None
@@ -210,6 +210,7 @@ class ETLRun:
 
     @Logging_decorator
     def main(self):
+        create_dir(self.log_dir)
         add_sql_engine(user=CONFIG_USER_ID, pw=CONFIG_PW, host=CONFIG_HOST, port=CONFIG_PORT, db=CONFIG_DB, engine_name=CONFIG_ENGINE_NAME)
         threads(iterator=[0, 1], target_func=x.run_engine, max_workers=None)
         print(f"RunID: {self.run_id}, time_elapsed: {self.time_elapsed}")
@@ -217,16 +218,19 @@ class ETLRun:
 
     @Logging_decorator
     def __serialize(self):
-        full_path = os.path.join('{}{}.pkl'.format(self.working_dir, self.run_id))
+        full_path = os.path.join('{}/{}.pkl'.format(self.log_dir, self.run_id))
         pickle.dump(self, open(full_path, 'wb'), protocol=pickle.HIGHEST_PROTOCOL)
 
     @Logging_decorator
     def __deserialize(self):
-        files = get_files_in_dir(path=self.working_dir, ext="pkl")
-        if files:
-            files.sort(reverse=True)
-            full_path = os.path.join("{}{}".format(self.working_dir, files[0]))
-            return pickle.load(open(full_path, 'rb'))
+        try:
+            files = get_files_in_dir(path=self.log_dir, ext="pkl")
+            if files:
+                files.sort(reverse=True)
+                full_path = os.path.join("{}/{}".format(self.log_dir, files[0]))
+                return pickle.load(open(full_path, 'rb'))
+        except FileNotFoundError:
+            pass
 
 
 ##################################################################################################################
@@ -236,5 +240,5 @@ if __name__ == '__main__':
     #   get the concurrency value for each level from the config db
     # run this in terminal id issue occurred related to libpq: "sudo ln -s /usr/lib/libpq.5.4.dylib /usr/lib/libpq.5.dylib"
 
-    x = ETLRun(max_workers=None)
+    x = ETLRun(log_dir="logs", max_workers=None)
     x.main()

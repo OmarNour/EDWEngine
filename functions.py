@@ -221,3 +221,14 @@ def get_files_in_dir(path, ext="", file_name=None):
 
 def generate_run_id():
     return int(str(time.time()).replace('.', ''))
+
+
+def is_dir_exists(path):
+    return os.path.exists(path)
+
+
+def create_dir(path):
+    try:
+        os.mkdir(os.path.join(path))
+    except OSError:
+        print("Creation of the directory %s failed" % path)
