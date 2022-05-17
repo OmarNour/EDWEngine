@@ -231,4 +231,4 @@ def create_dir(path):
     try:
         os.mkdir(os.path.join(path))
     except OSError:
-        print("Creation of the directory %s failed" % path)
+        print(f"{path} folder already exists!")
