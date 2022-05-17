@@ -239,7 +239,7 @@ if __name__ == '__main__':
     #   add concurrency parameter to be passed to max_worker parameter
     #   get the concurrency value for each level from the config db
     #   use asyncio for threading
-    # run this in terminal id issue occurred related to libpq: "sudo ln -s /usr/lib/libpq.5.4.dylib /usr/lib/libpq.5.dylib"
+    # run this in terminal if issue occurred related to libpq: "sudo ln -s /usr/lib/libpq.5.4.dylib /usr/lib/libpq.5.dylib"
 
     x = ETLRun(log_dir="logs", max_workers=None)
     x.main()
