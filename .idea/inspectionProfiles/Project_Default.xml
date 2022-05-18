@@ -1,0 +1,22 @@
+<component name="InspectionProjectProfileManager">
+  <profile version="1.0">
+    <option name="myName" value="Project Default" />
+    <inspection_tool class="PyPackageRequirementsInspection" enabled="true" level="WARNING" enabled_by_default="true">
+      <option name="ignoredPackages">
+        <value>
+          <list size="9">
+            <item index="0" class="java.lang.String" itemvalue="pafy" />
+            <item index="1" class="java.lang.String" itemvalue="pytube" />
+            <item index="2" class="java.lang.String" itemvalue="youtube-dl" />
+            <item index="3" class="java.lang.String" itemvalue="webm" />
+            <item index="4" class="java.lang.String" itemvalue="django" />
+            <item index="5" class="java.lang.String" itemvalue="dj-database-url" />
+            <item index="6" class="java.lang.String" itemvalue="Unipath" />
+            <item index="7" class="java.lang.String" itemvalue="python-decouple" />
+            <item index="8" class="java.lang.String" itemvalue="whitenoise" />
+          </list>
+        </value>
+      </option>
+    </inspection_tool>
+  </profile>
+</component>

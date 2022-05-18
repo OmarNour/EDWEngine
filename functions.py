@@ -16,8 +16,9 @@ import traceback
 import pprint
 import functools
 from sqlalchemy import create_engine
-
+import configparser
 pp = pprint.PrettyPrinter(depth=4)
+
 
 FAILED_SUCCESS = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
     , 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
@@ -129,13 +130,39 @@ SOURCE_LOADS = """
             --order by x.batch_seq
             """
 
-CONFIG_ENGINE_NAME = "config_db"
-CONFIG_USER_ID = "postgres"
-CONFIG_PW = "postgres"
-CONFIG_DB = "config_db"
-CONFIG_HOST = "localhost"
-CONFIG_PORT = 5432
+# CONFIG_ENGINE_NAME = None
+# CONFIG_USER_ID = None
+# CONFIG_PW = None
+# CONFIG_DB = None
+# CONFIG_HOST = None
+# CONFIG_PORT = None
 SQL_ENGINE_DIC = {}
+
+def PopulateFromConfigFile(self):
+    config_file = 'config_file'
+    parser = configparser.ConfigParser()
+    parser.read(config_file)
+    for section in parser.sections():
+        for key,value in parser.items(section):
+            value = value.replace('"','')
+            key = key.upper()
+            # print(' {} = {}'.format(key, value))
+            if key == "CONFIG_ENGINE_NAME":
+                self.CONFIG_ENGINE_NAME = value
+            if key == "CONFIG_USER_ID":
+                self.CONFIG_USER_ID = value
+            if key == "CONFIG_PW":
+                self.CONFIG_PW = value
+            if key == "CONFIG_DB":
+                self.CONFIG_DB = value
+            if key == "CONFIG_HOST":
+                self.CONFIG_HOST = value
+            if key == "CONFIG_HOST":
+                self.CONFIG_HOST = value
+            if key == "CONFIG_PORT":
+                self.CONFIG_PORT = value
+
+
 
 
 def Logging_decorator(function):

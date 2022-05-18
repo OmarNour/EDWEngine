@@ -1,5 +1,5 @@
 from model import *
-
+import functions as f
 
 class ETLRun:
 
@@ -11,6 +11,12 @@ class ETLRun:
         self.end_time = None
         self.time_elapsed = None
         self.source_failed = False
+        self.CONFIG_ENGINE_NAME = None
+        self.CONFIG_USER_ID = None
+        self.CONFIG_PW = None
+        self.CONFIG_DB = None
+        self.CONFIG_HOST = None
+        self.CONFIG_PORT = None
         self.execution_plan = {}
         self.registered_src_servers = {}
         self.registered_src_dbs = {}
@@ -26,6 +32,8 @@ class ETLRun:
         self.registered_processes = {}
         self.global_target_table = {}
         self.last_run = self.__deserialize()
+
+
 
     @Logging_decorator
     def register_process(self, df_row):
@@ -98,7 +106,7 @@ class ETLRun:
 
     @Logging_decorator
     def register_all_processes(self):
-        df = exec_query(ELT_PROCESS_VIEW, CONFIG_ENGINE_NAME).sort_values(['source_level', 'layer_level', 'data_source_layer_level', 'source_pipeline_level', 'process_level'])
+        df = exec_query(ELT_PROCESS_VIEW, self.CONFIG_ENGINE_NAME).sort_values(['source_level', 'layer_level', 'data_source_layer_level', 'source_pipeline_level', 'process_level'])
         for df_row in df.itertuples():
             self.register_process(df_row)
 
@@ -152,7 +160,7 @@ class ETLRun:
                 wait_to_complete(i_target_table_id, process_id)
 
         start_from_batch_id = self.get_last_batch_id(i_data_source.id)
-        loads = i_data_source.get_loads(CONFIG_ENGINE_NAME, start_from_batch_id)
+        loads = i_data_source.get_loads(self.CONFIG_ENGINE_NAME, start_from_batch_id)
         if not loads.empty:
             for row in loads.itertuples():
                 i_data_source.current_load_id = row.load_id
@@ -211,7 +219,8 @@ class ETLRun:
     @Logging_decorator
     def main(self):
         create_dir(self.log_dir)
-        add_sql_engine(user=CONFIG_USER_ID, pw=CONFIG_PW, host=CONFIG_HOST, port=CONFIG_PORT, db=CONFIG_DB, engine_name=CONFIG_ENGINE_NAME)
+        PopulateFromConfigFile(self)
+        add_sql_engine(user=self.CONFIG_USER_ID, pw=self.CONFIG_PW, host=self.CONFIG_HOST, port=self.CONFIG_PORT, db=self.CONFIG_DB, engine_name=self.CONFIG_ENGINE_NAME)
         threads(iterator=[0, 1], target_func=x.run_engine, max_workers=None)
         print(f"RunID: {self.run_id}, time_elapsed: {self.time_elapsed}")
         self.__serialize()
@@ -243,3 +252,4 @@ if __name__ == '__main__':
 
     x = ETLRun(log_dir="logs", max_workers=None)
     x.main()
+    # f.PopulateFromConfigFile()
