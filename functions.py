@@ -143,24 +143,25 @@ def PopulateFromConfigFile(self):
     parser = configparser.ConfigParser()
     parser.read(config_file)
     for section in parser.sections():
-        for key,value in parser.items(section):
-            value = value.replace('"','')
-            key = key.upper()
-            # print(' {} = {}'.format(key, value))
-            if key == "CONFIG_ENGINE_NAME":
-                self.CONFIG_ENGINE_NAME = value
-            if key == "CONFIG_USER_ID":
-                self.CONFIG_USER_ID = value
-            if key == "CONFIG_PW":
-                self.CONFIG_PW = value
-            if key == "CONFIG_DB":
-                self.CONFIG_DB = value
-            if key == "CONFIG_HOST":
-                self.CONFIG_HOST = value
-            if key == "CONFIG_HOST":
-                self.CONFIG_HOST = value
-            if key == "CONFIG_PORT":
-                self.CONFIG_PORT = value
+        if section == "configurations":
+            for key,value in parser.items(section):
+                value = value.replace('"','')
+                key = key.upper()
+                # print(' {} = {}'.format(key, value))
+                if key == "CONFIG_ENGINE_NAME":
+                    self.CONFIG_ENGINE_NAME = value
+                if key == "CONFIG_USER_ID":
+                    self.CONFIG_USER_ID = value
+                if key == "CONFIG_PW":
+                    self.CONFIG_PW = value
+                if key == "CONFIG_DB":
+                    self.CONFIG_DB = value
+                if key == "CONFIG_HOST":
+                    self.CONFIG_HOST = value
+                if key == "CONFIG_HOST":
+                    self.CONFIG_HOST = value
+                if key == "CONFIG_PORT":
+                    self.CONFIG_PORT = value
 
 
 
