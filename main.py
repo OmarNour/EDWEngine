@@ -1,6 +1,7 @@
 from model import *
 import functions as f
 
+
 class ETLRun:
 
     def __init__(self, log_dir, max_workers):
@@ -32,8 +33,6 @@ class ETLRun:
         self.registered_processes = {}
         self.global_target_table = {}
         self.last_run = self.__deserialize()
-
-
 
     @Logging_decorator
     def register_process(self, df_row):
