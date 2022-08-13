@@ -273,9 +273,9 @@ def get_third_col(row: iter) -> str:
     return [row[3]]
 
 
-def stream_csv_rows(rows: iter, transform_etl: object) -> iter:
+def stream_csv_rows(rows: iter, transform_func: object) -> iter:
     for row in rows:
-        transformed_row = transform_etl(row)
+        transformed_row = transform_func(row)
         yield transformed_row
 
 
