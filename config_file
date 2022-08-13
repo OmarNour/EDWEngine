@@ -1,7 +1,7 @@
 [configurations]
 CONFIG_ENGINE_NAME = "config_db"
 CONFIG_USER_ID = "postgres"
-CONFIG_PW = "root"
-CONFIG_DB = "EDWEngine"
+CONFIG_PW = "postgres"
+CONFIG_DB = "config_db"
 CONFIG_HOST = "localhost"
 CONFIG_PORT = 5432

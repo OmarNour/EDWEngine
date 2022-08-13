@@ -7,6 +7,7 @@ import os
 # from delta import *
 from typing import Iterable
 from random import choice, shuffle
+import csv
 
 try:
     import cPickle as pickle
@@ -259,3 +260,42 @@ def create_dir(path):
         os.mkdir(os.path.join(path))
     except OSError:
         print(f"{path} folder already exists!")
+
+
+def open_csv_file(file_location: str) -> iter:
+    with open(file_location) as f:
+        csv_reader = csv.reader(f)
+        for row in csv_reader:
+            yield row
+
+
+def get_third_col(row: iter) -> str:
+    return [row[3]]
+
+
+def stream_csv_rows(rows: iter, transform_etl: object) -> iter:
+    for row in rows:
+        transformed_row = transform_etl(row)
+        yield transformed_row
+
+
+def write_csv_rows(rows: iter, file_location: str, header=None):
+    with open(file_location, 'w') as csvfile:
+        writer = csv.writer(csvfile)
+        if header is not None:
+            writer.writerow(header)
+        for row in rows:
+            writer.writerow(row)
+
+
+if __name__ == '__main__':
+    folder = "/Users/omarnour/Downloads/"
+    csv_file = "data-1581886013539.csv"
+    trx_file = "data-1581886013539_trx.csv"
+    rows = open_csv_file(folder + csv_file)
+    transformed_rows = stream_csv_rows(rows, get_third_col)
+    write_csv_rows(transformed_rows, folder + trx_file)
+    print("Done")
+    # for row in rows:
+    #     print(row)
+    #     print("\n")
