@@ -6,7 +6,7 @@ import numpy as np
 import os
 # from delta import *
 from typing import Iterable
-from random import choice, shuffle
+from random import choice, shuffle, random, randint
 import csv
 import psycopg2
 import asyncio
@@ -290,9 +290,12 @@ def write_csv_rows(rows: iter, file_location: str, header=None):
             writer.writerow(row)
 
 
+def generate_random_int(min_val=0, max_val=999):
+    return randint(min_val, max_val)
+
 def generate_id():
     # return int(str(time.time()).replace('.', ''))
-    return time.time_ns()
+    return time.time_ns()+generate_random_int()
 
 
 def insert_into_db(id, session_id):
@@ -328,12 +331,13 @@ async def concurrent_inserts():
     # await t2
 
 
-
 def main():
     try:
         asyncio.run(concurrent_inserts())
+        # threads(iterator, target_func, max_workers=None)
     except KeyboardInterrupt as e:
         print("shutting down")
+
 
 
 if __name__ == '__main__':
