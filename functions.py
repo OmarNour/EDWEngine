@@ -8,6 +8,8 @@ import os
 from typing import Iterable
 from random import choice, shuffle
 import csv
+import psycopg2
+import asyncio
 
 try:
     import cPickle as pickle
@@ -288,14 +290,63 @@ def write_csv_rows(rows: iter, file_location: str, header=None):
             writer.writerow(row)
 
 
+def generate_id():
+    # return int(str(time.time()).replace('.', ''))
+    return time.time_ns()
+
+
+def insert_into_db(id, session_id):
+    conn = psycopg2.connect("dbname=retail_db user=postgres password=postgres")
+    cur = conn.cursor()
+    cur.execute("""insert into public.test_unq_id ( id, session_id) values ({}, {})""".format(id, session_id))
+    conn.commit()
+    # cur.execute('SELECT * from public.test_unq_id')
+    # rows = cur.fetchall()
+    # db_version = cur.fetchone()
+    # print(rows)
+    cur.close()
+
+
+async def always_insert(session_id):
+    while True:
+        insert_into_db(generate_id(), session_id)
+        await asyncio.sleep(0.01)
+
+
+async def concurrent_inserts():
+    """Runs the Producer and Consumer tasks"""
+    # task_list = []
+    for i in range(1000):
+        asyncio.create_task(always_insert(i))
+    #     task_list.append(t)
+    #     print(i)
+    for tx in asyncio.tasks.all_tasks():
+        await tx
+    # t1 = asyncio.create_task(always_insert(1))
+    # t2 = asyncio.create_task(always_insert(2))
+    # await t1
+    # await t2
+
+
+
+def main():
+    try:
+        asyncio.run(concurrent_inserts())
+    except KeyboardInterrupt as e:
+        print("shutting down")
+
+
 if __name__ == '__main__':
-    folder = "/Users/omarnour/Downloads/"
-    csv_file = "data-1581886013539.csv"
-    trx_file = "data-1581886013539_trx.csv"
-    rows = open_csv_file(folder + csv_file)
-    transformed_rows = stream_csv_rows(rows, get_third_col)
-    write_csv_rows(transformed_rows, folder + trx_file)
-    print("Done")
+    # print(generate_id())
+    main()
+
+    # folder = "/Users/omarnour/Downloads/"
+    # csv_file = "data-1581886013539.csv"
+    # trx_file = "data-1581886013539_trx.csv"
+    # rows = open_csv_file(folder + csv_file)
+    # transformed_rows = stream_csv_rows(rows, get_third_col)
+    # write_csv_rows(transformed_rows, folder + trx_file)
+    # print("Done")
     # for row in rows:
     #     print(row)
     #     print("\n")
