@@ -293,9 +293,10 @@ def write_csv_rows(rows: iter, file_location: str, header=None):
 def generate_random_int(min_val=0, max_val=999):
     return randint(min_val, max_val)
 
+
 def generate_id():
     # return int(str(time.time()).replace('.', ''))
-    return time.time_ns()+generate_random_int()
+    return time.time_ns() + generate_random_int()
 
 
 def insert_into_db(id, session_id):
@@ -337,7 +338,6 @@ def main():
         # threads(iterator, target_func, max_workers=None)
     except KeyboardInterrupt as e:
         print("shutting down")
-
 
 
 if __name__ == '__main__':
