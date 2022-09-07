@@ -249,6 +249,7 @@ if __name__ == '__main__':
     #   3-  use asyncio for threading
     #   4-  add new table to describe the key transform for each table
     #   5-  add new table to describe the key transfer for each pipeline & the selected columns
+    #   6-  add new table to describe the transformation types (insert, upsert, upsertdelete & history)
     # run this in terminal if issue occurred related to libpq: "sudo ln -s /usr/lib/libpq.5.4.dylib /usr/lib/libpq.5.dylib"
 
     x = ETLRun(log_dir="logs", max_workers=None)
