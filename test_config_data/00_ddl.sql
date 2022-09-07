@@ -7,8 +7,8 @@ DROP TABLE if exists pipelines;
 DROP TABLE if exists data_source_layers;
 DROP TABLE if exists layers;
 DROP TABLE if exists db_connection;
-DROP TABLE if exists schema_tables;
-DROP TABLE if exists db_schemas;
+DROP TABLE if exists tables;
+DROP TABLE if exists schemas;
 DROP TABLE if exists db;
 DROP TABLE if exists server_ips;
 DROP TABLE if exists db_type;
@@ -57,7 +57,7 @@ CREATE table if not exists db_connection (
 	CONSTRAINT db_connection_fk FOREIGN KEY (db_id) REFERENCES db(id) ON DELETE RESTRICT ON UPDATE RESTRICT
 );
 
-CREATE table if not exists db_schemas (
+CREATE table if not exists schemas (
 	id int4 NOT NULL,
 	db_id int4 not NULL,
 	schema_name varchar not NULL,
@@ -66,13 +66,13 @@ CREATE table if not exists db_schemas (
 	CONSTRAINT db_schemas_fk FOREIGN KEY (db_id) REFERENCES db(id) ON DELETE RESTRICT ON UPDATE RESTRICT
 );
 
-CREATE table if not exists schema_tables (
+CREATE table if not exists tables (
 	id int4 NOT NULL,
 	schema_id int4 not NULL,
 	table_name varchar not NULL,
 	active int4 not NULL,
 	CONSTRAINT schema_tables_pk PRIMARY KEY (id),
-	CONSTRAINT schema_tables_fk FOREIGN KEY (schema_id) REFERENCES db_schemas(id) ON DELETE RESTRICT ON UPDATE RESTRICT
+	CONSTRAINT schema_tables_fk FOREIGN KEY (schema_id) REFERENCES schemas(id) ON DELETE RESTRICT ON UPDATE RESTRICT
 );
 
 CREATE table if not exists pipelines (
@@ -81,8 +81,8 @@ CREATE table if not exists pipelines (
 	tgt_table_id int4 not NULL,
 	active int4 NULL,
 	CONSTRAINT pipelines_pk PRIMARY KEY (id),
-	CONSTRAINT pipelines_fk FOREIGN KEY (src_table_id) REFERENCES schema_tables(id) ON DELETE RESTRICT ON UPDATE RESTRICT,
-	CONSTRAINT pipelines_fk_1 FOREIGN KEY (tgt_table_id) REFERENCES schema_tables(id) ON DELETE RESTRICT ON UPDATE RESTRICT
+	CONSTRAINT pipelines_fk FOREIGN KEY (src_table_id) REFERENCES tables(id) ON DELETE RESTRICT ON UPDATE RESTRICT,
+	CONSTRAINT pipelines_fk_1 FOREIGN KEY (tgt_table_id) REFERENCES tables(id) ON DELETE RESTRICT ON UPDATE RESTRICT
 );
 
 CREATE TABLE layers (
