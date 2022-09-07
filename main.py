@@ -247,10 +247,10 @@ if __name__ == '__main__':
     #   1-  add concurrency parameter to be passed to max_worker parameter
     #   2-  get the concurrency value for each level from the config db
     #   3-  use asyncio for threading
-    #   4-  add new table to describe the key transform for each table
-    #   5-  add new table to describe the key transfer for each pipeline & the selected columns
+    #   4-  add new table to describe the key columns for each table
+    #   5-  add new table to describe the key columns for each pipeline & the selected columns
     #   6-  add new table to describe the transformation types (insert, upsert, upsertdelete & history)
-    #   7-  surrogate table, to hold the combination of columns for each surrogate key and for which domain it belongs
+    #   7-  surrogate table, to hold the combination of columns for each surrogate key, and for which domain it belongs
     # run this in terminal if issue occurred related to libpq: "sudo ln -s /usr/lib/libpq.5.4.dylib /usr/lib/libpq.5.dylib"
 
     x = ETLRun(log_dir="logs", max_workers=None)
