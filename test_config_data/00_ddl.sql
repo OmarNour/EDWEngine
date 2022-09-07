@@ -15,7 +15,6 @@ DROP TABLE if exists db_type;
 DROP TABLE if exists servers;
 DROP TABLE if exists data_source_load;
 
-
 CREATE TABLE data_sources (
 	id text NOT NULL,
 	source_name text NULL,
@@ -25,25 +24,11 @@ CREATE TABLE data_sources (
 	CONSTRAINT data_sources_pk PRIMARY KEY (id)
 );
 
-
--- public.db_type definition
-
--- Drop table
-
---
-
 CREATE TABLE db_type (
 	id int4 NOT NULL,
 	"type" varchar NULL,
 	CONSTRAINT db_type_pkey PRIMARY KEY (id)
 );
-
-
--- public.layers definition
-
--- Drop table
-
---
 
 CREATE TABLE layers (
 	id text NOT NULL,
@@ -55,25 +40,11 @@ CREATE TABLE layers (
 	CONSTRAINT layers_pk PRIMARY KEY (id)
 );
 
-
--- public.servers definition
-
--- Drop table
-
---
-
 CREATE TABLE servers (
 	id text NOT NULL,
 	server_name text NULL,
 	CONSTRAINT servers_pk PRIMARY KEY (id)
 );
-
-
--- public.data_source_layers definition
-
--- Drop table
-
---
 
 CREATE TABLE data_source_layers (
 	id text NOT NULL,
@@ -86,26 +57,12 @@ CREATE TABLE data_source_layers (
 	CONSTRAINT data_source_layers_fk_1 FOREIGN KEY (layer_id) REFERENCES layers(id)
 );
 
-
--- public.data_source_load definition
-
--- Drop table
-
---
-
 CREATE TABLE data_source_load (
 	batch_id int4 NULL,
 	source_id varchar NULL,
 	load_id text NULL,
 	CONSTRAINT data_source_load_fk FOREIGN KEY (source_id) REFERENCES data_sources(id) ON DELETE RESTRICT ON UPDATE RESTRICT
 );
-
-
--- public.db definition
-
--- Drop table
-
---
 
 CREATE TABLE db (
 	id text NOT NULL,
@@ -118,13 +75,6 @@ CREATE TABLE db (
 	CONSTRAINT db_fk1 FOREIGN KEY (db_type_id) REFERENCES db_type(id) ON DELETE RESTRICT ON UPDATE RESTRICT
 );
 
-
--- public.db_connection definition
-
--- Drop table
-
---
-
 CREATE TABLE db_connection (
 	id text NOT NULL,
 	db_id text NULL,
@@ -136,13 +86,6 @@ CREATE TABLE db_connection (
 	CONSTRAINT db_connection_fk FOREIGN KEY (db_id) REFERENCES db(id) ON DELETE RESTRICT ON UPDATE RESTRICT
 );
 
-
--- public.server_ips definition
-
--- Drop table
-
---
-
 CREATE TABLE server_ips (
 	id text NOT NULL,
 	server_id text NULL,
@@ -150,11 +93,6 @@ CREATE TABLE server_ips (
 	CONSTRAINT server_ips_pk PRIMARY KEY (id),
 	CONSTRAINT server_ips_fk FOREIGN KEY (server_id) REFERENCES servers(id) ON DELETE RESTRICT ON UPDATE RESTRICT
 );
-
-
--- public.all_tables definition
-
--- Drop table
 
 CREATE TABLE all_tables (
 	id text NOT NULL,
@@ -164,13 +102,6 @@ CREATE TABLE all_tables (
 	CONSTRAINT all_tables_pk PRIMARY KEY (id),
 	CONSTRAINT all_tables_fk FOREIGN KEY (db_id) REFERENCES db(id) ON DELETE RESTRICT ON UPDATE RESTRICT
 );
-
-
--- public.pipelines definition
-
--- Drop table
-
-
 
 CREATE TABLE pipelines (
 	id text NOT NULL,
@@ -182,13 +113,6 @@ CREATE TABLE pipelines (
 	CONSTRAINT pipelines_fk_1 FOREIGN KEY (tgt_table_id) REFERENCES all_tables(id) ON DELETE RESTRICT ON UPDATE RESTRICT
 );
 
-
--- public.source_pipelines definition
-
--- Drop table
-
-
-
 CREATE TABLE source_pipelines (
 	id text NOT NULL,
 	source_layer_id text NULL,
@@ -199,13 +123,6 @@ CREATE TABLE source_pipelines (
 	CONSTRAINT source_pipelines_fk FOREIGN KEY (source_layer_id) REFERENCES data_source_layers(id) ON DELETE RESTRICT ON UPDATE RESTRICT,
 	CONSTRAINT source_pipelines_fk_1 FOREIGN KEY (pipeline_id) REFERENCES pipelines(id) ON DELETE RESTRICT ON UPDATE RESTRICT
 );
-
-
--- public.processes definition
-
--- Drop table
-
-
 
 CREATE TABLE processes (
 	id text NOT NULL,
