@@ -122,10 +122,10 @@ SOURCE_LOADS = """
                 select y.id source_id, x.load_id , min(cast(x.batch_id as int)) batch_seq
                 from data_source_load x
                 join data_sources y 
-                on upper(x.source_name) = upper(y.source_name)
+                on upper(x.source_id) = upper(y.id)
                 and y.id = '{src_id}'
                 {exclude_loads} -- exclude processed loads
-                group by source_id, load_id
+                group by y.id, load_id
             )
             select x.* 
             from t1 x
