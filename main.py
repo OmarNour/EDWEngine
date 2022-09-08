@@ -252,6 +252,7 @@ if __name__ == '__main__':
     #   6-  add new table to describe the transformation types (insert, upsert, upsertdelete & history)
     #   7-  surrogate table, to hold the combination of columns for each surrogate key, and for which domain it belongs
     #   8-  table to hold the supported data types for each db
+    #   9-  Layer technical columns table
     # run this in terminal if issue occurred related to libpq: "sudo ln -s /usr/lib/libpq.5.4.dylib /usr/lib/libpq.5.dylib"
 
     x = ETLRun(log_dir="logs", max_workers=None)
