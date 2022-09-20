@@ -349,12 +349,13 @@ def load_excelFile_to_db(file_path, user, pw, host, db, schema, port):
         print(f'working on {sheet_name}')
         try:
             df = xls.parse(sheet_name).replace(np.nan, value='', regex=True)
-            df.columns = df.columns.str.replace('  ', ' ').str.replace(' ', '_')
+            df.columns = df.columns.str.lower().str.replace('  ', ' ').str.replace(' ', '_')
             df = df.applymap(lambda x: x.strip() if type(x) is str else int(x) if type(x) is float else x)
-            table_name = sheet_name.replace('  ', ' ').replace(' ', '_')
+            table_name = sheet_name.replace('  ', ' ').replace(' ', '_').lower()
             df.drop_duplicates().to_sql(table_name, con=db_engine, if_exists='replace', schema=schema, index=False)
         except Exception as e:
             print(e)
+
 
 if __name__ == '__main__':
     # print(generate_id())
