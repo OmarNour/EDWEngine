@@ -346,14 +346,19 @@ def load_excelFile_to_db(file_path, user, pw, host, db, schema, port):
     xls = pd.ExcelFile(file_path)
     sheets = xls.sheet_names
     for sheet_name in sheets:
-        print(f'working on {sheet_name}')
         try:
             df = xls.parse(sheet_name).replace(np.nan, value='', regex=True)
-            df.columns = df.columns.str.lower().str.replace('  ', ' ').str.replace(' ', '_')
-            df = df.applymap(lambda x: x.strip() if type(x) is str else int(x) if type(x) is float else x)
-            table_name = sheet_name.replace('  ', ' ').replace(' ', '_').lower()
-            df.drop_duplicates().to_sql(table_name, con=db_engine, if_exists='replace', schema=schema, index=False)
+            records_counts = len(df.index)
+            if records_counts > 0:
+                df.columns = df.columns.str.lower().str.replace('  ', ' ').str.replace(' ', '_')
+                df = df.applymap(lambda x: x.strip() if type(x) is str else int(x) if type(x) is float else x)
+                table_name = sheet_name.replace('  ', ' ').replace(' ', '_').lower()
+                df.drop_duplicates().to_sql(table_name, con=db_engine, if_exists='replace', schema=schema, index=False)
+                print(f'{records_counts} record from sheet "{sheet_name}", moved to {schema}.{table_name} table.')
+            else:
+                print(f'Sheet "{sheet_name}" is empty!.')
         except Exception as e:
+            print(f'Failed to read sheet "{sheet_name}" :(')
             print(e)
 
 
