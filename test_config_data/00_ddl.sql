@@ -104,7 +104,7 @@ CREATE table if not exists db_connection (
 CREATE table if not exists schemas (
 	id int4 NOT NULL,
 	db_id int4 not NULL,
-	is_stg int2 not NULL default 0,
+	is_tmp int2 not NULL default 0,
 	schema_name varchar not NULL,
 	notes text NULL,
 	CONSTRAINT schemas_pk PRIMARY KEY (id),
