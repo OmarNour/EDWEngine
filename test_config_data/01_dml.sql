@@ -1,3 +1,6 @@
+delete from edw_config.db_type;
+delete from edw_config.server_ips;
+delete from edw_config.servers;
 delete from edw_config.source_layers;
 delete from edw_config.layers;
 delete from edw_config.data_sources;
@@ -31,3 +34,11 @@ INSERT INTO edw_config.source_layers
 select x.id source_id,y.id layer_id, 0 source_layer_level, 1 active, null notes
 from edw_config.data_sources x, edw_config.layers y;
 ------------------------------------------------------------------------------
+INSERT INTO edw_config.servers (server_name) VALUES('Citizen Prod');
+------------------------------------------------------------------------------
+INSERT INTO edw_config.server_ips (server_id, ip)
+select x.id server_id, 'localhost' ip from edw_config.servers x;
+------------------------------------------------------------------------------
+INSERT INTO edw_config.db_type ("type") VALUES('RDBMS');
+------------------------------------------------------------------------------
+
