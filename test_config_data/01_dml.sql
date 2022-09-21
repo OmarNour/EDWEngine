@@ -1,3 +1,4 @@
+delete from edw_config."schemas";
 delete from edw_config.db_connection;
 delete from edw_config.db;
 delete from edw_config.db_type;
@@ -59,3 +60,25 @@ INSERT INTO edw_config.db_connection (db_id, user_name, pw, port)
 select d.id db_id, 'postgres' user_name, 'postgres' pw, 5432 port
 from edw_config.db d;
 ------------------------------------------------------------------------------
+INSERT INTO edw_config."schemas" (db_id, is_tmp, schema_name, notes)
+select d.id db_id, 0 is_tmp, 'public' schema_name, null notes
+from edw_config.db d
+where d.db_name = 'raw_db';
+
+INSERT INTO edw_config."schemas" (db_id, is_tmp, schema_name, notes)
+select d.id db_id, 1 is_tmp, 'temp' schema_name, null notes
+from edw_config.db d
+where d.db_name = 'ods_db';
+
+INSERT INTO edw_config."schemas" (db_id, is_tmp, schema_name, notes)
+select d.id db_id, 0 is_tmp, 'public' schema_name, null notes
+from edw_config.db d
+where d.db_name = 'ods_db';
+------------------------------------------------------------------------------
+
+
+
+
+
+
+
