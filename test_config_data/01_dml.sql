@@ -1,3 +1,4 @@
+delete from edw_config.db_connection;
 delete from edw_config.db;
 delete from edw_config.db_type;
 delete from edw_config.server_ips;
@@ -53,4 +54,8 @@ select s.id server_id, dt.id db_type_id, 'ods_db' db_name, null notes
 from edw_config.servers s , edw_config.db_type dt
 where s.server_name = 'Citizen Prod'
 and dt."type" = 'RDBMS';
+------------------------------------------------------------------------------
+INSERT INTO edw_config.db_connection (db_id, user_name, pw, port)
+select d.id db_id, 'postgres' user_name, 'postgres' pw, 5432 port
+from edw_config.db d;
 ------------------------------------------------------------------------------
