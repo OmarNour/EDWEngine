@@ -1,3 +1,4 @@
+delete from edw_config.db;
 delete from edw_config.db_type;
 delete from edw_config.server_ips;
 delete from edw_config.servers;
@@ -41,4 +42,15 @@ select x.id server_id, 'localhost' ip from edw_config.servers x;
 ------------------------------------------------------------------------------
 INSERT INTO edw_config.db_type ("type") VALUES('RDBMS');
 ------------------------------------------------------------------------------
+INSERT INTO edw_config.db (server_id, db_type_id, db_name, notes)
+select s.id server_id, dt.id db_type_id, 'raw_db' db_name, null notes
+from edw_config.servers s , edw_config.db_type dt
+where s.server_name = 'Citizen Prod'
+and dt."type" = 'RDBMS';
 
+INSERT INTO edw_config.db (server_id, db_type_id, db_name, notes)
+select s.id server_id, dt.id db_type_id, 'ods_db' db_name, null notes
+from edw_config.servers s , edw_config.db_type dt
+where s.server_name = 'Citizen Prod'
+and dt."type" = 'RDBMS';
+------------------------------------------------------------------------------
