@@ -1,3 +1,4 @@
+delete from edw_config."tables";
 delete from edw_config."schemas";
 delete from edw_config.db_connection;
 delete from edw_config.db;
@@ -80,3 +81,28 @@ select d.id db_id, 0 is_tmp, 'stg' schema_name, null notes
 from edw_config.db d
 where d.db_name = 'ods_db';
 ------------------------------------------------------------------------------
+INSERT INTO edw_config."tables" (schema_id, table_name, active)
+select distinct s.id schema_id, t.table_name, 1 active
+from edw_config.db d, edw_config."schemas" s, smx.stg_tables t
+where s.schema_name = 'public'
+and d.db_name ='raw_db'
+and d.id =s.db_id
+and t.table_name <> '' ;
+------------------------------------------------------------------------------
+INSERT INTO edw_config."tables" (schema_id, table_name, active)
+select distinct s.id schema_id, t.table_name, 1 active
+from edw_config.db d, edw_config."schemas" s, smx.stg_tables t
+where s.schema_name = 'wrk'
+and d.db_name ='ods_db'
+and d.id =s.db_id
+and t.table_name <> '' ;
+------------------------------------------------------------------------------
+INSERT INTO edw_config."tables" (schema_id, table_name, active)
+select distinct s.id schema_id, t.table_name, 1 active
+from edw_config.db d, edw_config."schemas" s, smx.stg_tables t
+where s.schema_name = 'stg'
+and d.db_name ='ods_db'
+and d.id =s.db_id
+and t.table_name <> '' ;
+------------------------------------------------------------------------------
+
