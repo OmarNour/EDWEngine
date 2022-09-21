@@ -20,7 +20,7 @@ DROP TABLE if exists data_sources;
 DROP TABLE if exists layers;
 
 CREATE table if not exists data_sources (
-	id int4 NOT NULL,
+	id int NOT NULL GENERATED ALWAYS AS IDENTITY,
 	source_name varchar not NULL,
 	source_level int4 not NULL,
 	scheduled int4 not NULL,
@@ -29,7 +29,7 @@ CREATE table if not exists data_sources (
 );
 
 CREATE table if not exists layers (
-	id int4 NOT NULL,
+	id int NOT NULL GENERATED ALWAYS AS IDENTITY,
 	layer_name varchar not NULL,
 	abbrev varchar NULL,
 	layer_level int4 NULL,
@@ -39,7 +39,7 @@ CREATE table if not exists layers (
 );
 
 CREATE table if not exists source_layers (
-	id int4 NOT NULL,
+	id int NOT NULL GENERATED ALWAYS AS IDENTITY,
 	source_id int4 NOT NULL,
 	layer_id int4 NOT NULL,
 	source_layer_level int4 NULL,
@@ -51,7 +51,7 @@ CREATE table if not exists source_layers (
 );
 
 CREATE table if not exists data_source_load (
-    id int4 NOT NULL,
+    id int NOT NULL GENERATED ALWAYS AS IDENTITY,
 	batch_id int4 not NULL,
 	source_id int4 not NULL,
 	load_id varchar not NULL,
@@ -61,19 +61,19 @@ CREATE table if not exists data_source_load (
 );
 
 CREATE table if not exists servers (
-	id int4 NOT NULL,
+	id int NOT NULL GENERATED ALWAYS AS IDENTITY,
 	server_name varchar not NULL,
 	CONSTRAINT servers_pk PRIMARY KEY (id)
 );
 
 CREATE table if not exists db_type (
-	id int4 NOT NULL,
+	id int NOT NULL GENERATED ALWAYS AS IDENTITY,
 	"type" varchar not NULL,
 	CONSTRAINT db_type_pkey PRIMARY KEY (id)
 );
 
 CREATE table if not exists server_ips (
-	id int4 NOT NULL,
+	id int NOT NULL GENERATED ALWAYS AS IDENTITY,
 	server_id int4 not NULL,
 	ip varchar not NULL,
 	CONSTRAINT server_ips_pk PRIMARY KEY (id),
@@ -81,7 +81,7 @@ CREATE table if not exists server_ips (
 );
 
 CREATE table if not exists db (
-	id int4 NOT NULL,
+	id int NOT NULL GENERATED ALWAYS AS IDENTITY,
 	server_id int4 not NULL,
 	db_type_id int4 not NULL,
 	db_name varchar not NULL,
@@ -92,7 +92,7 @@ CREATE table if not exists db (
 );
 
 CREATE table if not exists db_connection (
-	id int4 NOT NULL,
+	id int NOT NULL GENERATED ALWAYS AS IDENTITY,
 	db_id int4 not NULL,
 	user_name varchar not NULL,
 	pw varchar not NULL,
@@ -102,7 +102,7 @@ CREATE table if not exists db_connection (
 );
 
 CREATE table if not exists schemas (
-	id int4 NOT NULL,
+	id int NOT NULL GENERATED ALWAYS AS IDENTITY,
 	db_id int4 not NULL,
 	is_tmp int2 not NULL default 0,
 	schema_name varchar not NULL,
@@ -112,7 +112,7 @@ CREATE table if not exists schemas (
 );
 
 CREATE table if not exists tables (
-	id int4 NOT NULL,
+	id int NOT NULL GENERATED ALWAYS AS IDENTITY,
 	schema_id int4 not NULL,
 	table_name varchar not NULL,
 	active int4 not NULL default 1,
@@ -121,13 +121,13 @@ CREATE table if not exists tables (
 );
 
 CREATE table if not exists domains (
-	id int4 NOT NULL,
+	id int NOT NULL GENERATED ALWAYS AS IDENTITY,
 	domain_name varchar not NULL,
 	CONSTRAINT domains_pk PRIMARY KEY (id)
 );
 
 CREATE table if not exists columns (
-	id int4 NOT NULL,
+	id int NOT NULL GENERATED ALWAYS AS IDENTITY,
 	table_id int4 not NULL,
 	column_name varchar not NULL,
 	is_pk           int2    not NULL default 0,
@@ -144,7 +144,7 @@ CREATE table if not exists columns (
 );
 
 CREATE table if not exists source_layer_tables (
-	id int4 NOT NULL,
+	id int NOT NULL GENERATED ALWAYS AS IDENTITY,
 	source_layer_id int4 not NULL,
 	table_id int4 not NULL,
 	active int4 not NULL default 1,
@@ -154,7 +154,7 @@ CREATE table if not exists source_layer_tables (
 );
 
 CREATE table if not exists pipelines (
-	id int4 NOT NULL,
+	id int NOT NULL GENERATED ALWAYS AS IDENTITY,
 	src_lyr_table_id int4 not NULL,
 	tgt_lyr_table_id int4 not NULL,
 	active int4 NULL default 1,
@@ -164,7 +164,7 @@ CREATE table if not exists pipelines (
 );
 
 CREATE table if not exists columns_mapping (
-	id int4 NOT NULL,
+	id int NOT NULL GENERATED ALWAYS AS IDENTITY,
 	pipeline_id int4 not null,
 	col_seq int4 not null,
 	tgt_col_id  int4 not null,

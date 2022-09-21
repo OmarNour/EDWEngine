@@ -353,7 +353,7 @@ def load_excelFile_to_db(file_path, user, pw, host, db, schema, port):
                 df.columns = df.columns.str.lower().str.replace('  ', ' ').str.replace(' ', '_')
                 df = df.applymap(lambda x: x.strip() if type(x) is str else int(x) if type(x) is float else x)
                 table_name = sheet_name.replace('  ', ' ').replace(' ', '_').lower()
-                df.drop_duplicates().to_sql(table_name, con=db_engine, if_exists='replace', schema=schema, index=False)
+                df.drop_duplicates().to_sql(table_name, con=db_engine, if_exists='replace', schema=schema, index=True)
                 print(f'{records_counts} record from sheet "{sheet_name}", moved to {schema}.{table_name} table.')
             else:
                 print(f'Sheet "{sheet_name}" is empty!.')
