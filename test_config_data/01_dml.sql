@@ -71,14 +71,12 @@ from edw_config.db d
 where d.db_name = 'ods_db';
 
 INSERT INTO edw_config."schemas" (db_id, is_tmp, schema_name, notes)
-select d.id db_id, 0 is_tmp, 'public' schema_name, null notes
+select d.id db_id, 0 is_tmp, 'wrk' schema_name, null notes
+from edw_config.db d
+where d.db_name = 'ods_db';
+
+INSERT INTO edw_config."schemas" (db_id, is_tmp, schema_name, notes)
+select d.id db_id, 0 is_tmp, 'stg' schema_name, null notes
 from edw_config.db d
 where d.db_name = 'ods_db';
 ------------------------------------------------------------------------------
-
-
-
-
-
-
-
