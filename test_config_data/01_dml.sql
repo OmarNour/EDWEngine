@@ -120,21 +120,48 @@ from edw_config."tables" t
 	on sl.source_id = ds.id
 
 
-where exists (select 1
-				from edw_config."schemas" s
-				where s.schema_name = 'wrk'
-				and t.schema_id=s.id
-				and exists (select 1
-							from edw_config.db d
-							where s.db_id = d.id
-							and d.db_name='ods_db'
-							and exists (select 1
-										from edw_config.servers s2
-										where d.server_id=s2.id
-										and s2.server_name='Citizen Prod'
-										)
-							)
-				)
+where
+(
+	exists (select 1
+					from edw_config."schemas" s
+					where s.schema_name = 'wrk'
+					and t.schema_id=s.id
+					and exists (select 1
+								from edw_config.db d
+								where s.db_id = d.id
+								and d.db_name='ods_db'
+								and exists (select 1
+											from edw_config.servers s2
+											where d.server_id=s2.id
+											and s2.server_name='Citizen Prod'
+											)
+								)
+					)
 
-and exists (select 1 from edw_config.layers l  where l.abbrev ='wrk' and sl.layer_id=l.id);
+	and exists (select 1 from edw_config.layers l  where l.abbrev ='wrk' and sl.layer_id=l.id)
+)
+or
+(
+	exists (select 1
+					from edw_config."schemas" s
+					where s.schema_name = 'public'
+					and t.schema_id=s.id
+					and exists (select 1
+								from edw_config.db d
+								where s.db_id = d.id
+								and d.db_name='raw_db'
+								and exists (select 1
+											from edw_config.servers s2
+											where d.server_id=s2.id
+											and s2.server_name='Citizen Prod'
+											)
+								)
+					)
+
+	and exists (select 1 from edw_config.layers l  where l.abbrev ='src' and sl.layer_id=l.id)
+);
 ------------------------------------------------------------------------------
+
+
+
+
