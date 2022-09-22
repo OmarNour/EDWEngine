@@ -1,3 +1,4 @@
+delete from edw_config.source_layer_tables;
 delete from edw_config."tables";
 delete from edw_config."schemas";
 delete from edw_config.db_connection;
@@ -105,4 +106,35 @@ and d.db_name ='ods_db'
 and d.id =s.db_id
 and t.table_name <> '' ;
 ------------------------------------------------------------------------------
+INSERT INTO edw_config.source_layer_tables (source_layer_id, table_id, active)
+select distinct  sl.id source_layer_id, t.id table_id, 1 active
+from edw_config."tables" t
 
+	join smx.stg_tables st
+	on t.table_name = st.table_name
+
+	join edw_config.data_sources ds
+	on ds.source_name = st."schema"
+
+	join edw_config.source_layers sl
+	on sl.source_id = ds.id
+
+
+where exists (select 1
+				from edw_config."schemas" s
+				where s.schema_name = 'wrk'
+				and t.schema_id=s.id
+				and exists (select 1
+							from edw_config.db d
+							where s.db_id = d.id
+							and d.db_name='ods_db'
+							and exists (select 1
+										from edw_config.servers s2
+										where d.server_id=s2.id
+										and s2.server_name='Citizen Prod'
+										)
+							)
+				)
+
+and exists (select 1 from edw_config.layers l  where l.abbrev ='wrk' and sl.layer_id=l.id);
+------------------------------------------------------------------------------
