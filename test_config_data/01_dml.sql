@@ -1,3 +1,4 @@
+delete from edw_config."columns";
 delete from edw_config.source_layer_tables;
 delete from edw_config."tables";
 delete from edw_config."schemas";
@@ -161,7 +162,52 @@ or
 	and exists (select 1 from edw_config.layers l  where l.abbrev ='src' and sl.layer_id=l.id)
 );
 ------------------------------------------------------------------------------
+--INSERT INTO edw_config.domains (domain_name) VALUES('');
+------------------------------------------------------------------------------
+INSERT INTO edw_config."columns" (table_id, column_name, is_pk, is_sk, is_start_date, is_end_date, scd_type, domain_id, active)
+select t.id table_id, st.column_name,case when upper(st.pk) = 'Y' then 1 else 0 end is_pk
+, 0 is_sk, 0 is_start_date, 0 is_end_date, 0 scd_type, null domain_id, 1 active
+from edw_config."tables" t
 
+	join smx.stg_tables st
+	on st.table_name = t.table_name
 
+where st.key_set_name = ''
+and
+(
+	exists (select 1
+					from edw_config."schemas" s
+					where s.schema_name = 'wrk'
+					and t.schema_id=s.id
+					and exists (select 1
+								from edw_config.db d
+								where s.db_id = d.id
+								and d.db_name='ods_db'
+								and exists (select 1
+											from edw_config.servers s2
+											where d.server_id=s2.id
+											and s2.server_name='Citizen Prod'
+											)
+								)
+					)
 
+)
+or
+(
+	exists (select 1
+					from edw_config."schemas" s
+					where s.schema_name = 'public'
+					and t.schema_id=s.id
+					and exists (select 1
+								from edw_config.db d
+								where s.db_id = d.id
+								and d.db_name='raw_db'
+								and exists (select 1
+											from edw_config.servers s2
+											where d.server_id=s2.id
+											and s2.server_name='Citizen Prod'
+											)
+								)
+					)
 
+);
