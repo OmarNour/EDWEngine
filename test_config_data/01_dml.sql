@@ -1,5 +1,5 @@
 delete from edw_config."columns";
-delete from edw_config.source_layer_tables;
+delete from edw_config.layer_tables;
 delete from edw_config."tables";
 delete from edw_config."schemas";
 delete from edw_config.db_connection;
@@ -7,12 +7,8 @@ delete from edw_config.db;
 delete from edw_config.db_type;
 delete from edw_config.server_ips;
 delete from edw_config.servers;
-delete from edw_config.source_layers;
-delete from edw_config.layers;
 delete from edw_config.data_sources;
-------------------------------------------------------------------------------
-INSERT INTO edw_config.data_sources ( source_name, source_level, scheduled, active)
-select x.source_system_name , 0, 1, 1 from smx."system" x;
+delete from edw_config.layers;
 ------------------------------------------------------------------------------
 INSERT INTO edw_config.layers (layer_name, abbrev, layer_level, active, notes)
 VALUES('source data', 'src', 0, 1, '');
@@ -35,10 +31,10 @@ VALUES('Data Warehouse', 'dwh', 5, 1, '');
 INSERT INTO edw_config.layers (layer_name, abbrev, layer_level, active, notes)
 VALUES('Presentation Layer', 'pl', 6, 1, '');
 ------------------------------------------------------------------------------
-INSERT INTO edw_config.source_layers
-(source_id, layer_id, source_layer_level, active, notes)
-select x.id source_id,y.id layer_id, 0 source_layer_level, 1 active, null notes
-from edw_config.data_sources x, edw_config.layers y;
+INSERT INTO edw_config.data_sources ( source_name, layer_id, source_level, scheduled, active)
+select x.source_system_name ,l.id layer_id, 0, 1, 1
+from smx."system" x, edw_config.layers l
+where l.abbrev = 'src';
 ------------------------------------------------------------------------------
 INSERT INTO edw_config.servers (server_name) VALUES('Citizen Prod');
 ------------------------------------------------------------------------------
@@ -107,25 +103,15 @@ and d.db_name ='ods_db'
 and d.id =s.db_id
 and t.table_name <> '' ;
 ------------------------------------------------------------------------------
-INSERT INTO edw_config.source_layer_tables (source_layer_id, table_id, active)
-select distinct  sl.id source_layer_id, t.id table_id, 1 active
-from edw_config."tables" t
-
-	join smx.stg_tables st
-	on t.table_name = st.table_name
-
-	join edw_config.data_sources ds
-	on ds.source_name = st."schema"
-
-	join edw_config.source_layers sl
-	on sl.source_id = ds.id
-
-
+INSERT INTO edw_config.layer_tables (layer_id, table_id, active)
+select distinct  l.id layer_id, t.id table_id, 1 active
+from edw_config."tables" t, edw_config.layers l
 where
 (
 	exists (select 1
 					from edw_config."schemas" s
 					where s.schema_name = 'wrk'
+					and l.abbrev ='wrk'
 					and t.schema_id=s.id
 					and exists (select 1
 								from edw_config.db d
@@ -139,13 +125,13 @@ where
 								)
 					)
 
-	and exists (select 1 from edw_config.layers l  where l.abbrev ='wrk' and sl.layer_id=l.id)
 )
 or
 (
 	exists (select 1
 					from edw_config."schemas" s
 					where s.schema_name = 'public'
+					and l.abbrev ='src'
 					and t.schema_id=s.id
 					and exists (select 1
 								from edw_config.db d
@@ -159,7 +145,6 @@ or
 								)
 					)
 
-	and exists (select 1 from edw_config.layers l  where l.abbrev ='src' and sl.layer_id=l.id)
 );
 ------------------------------------------------------------------------------
 --INSERT INTO edw_config.domains (domain_name) VALUES('');
