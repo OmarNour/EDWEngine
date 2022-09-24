@@ -106,8 +106,15 @@ and t.table_name <> '' ;
 INSERT INTO edw_config.layer_tables (layer_id, table_id, active)
 select distinct  l.id layer_id, t.id table_id, 1 active
 from edw_config."tables" t, edw_config.layers l
-where l.abbrev in ('wrk', 'stg')
-and t.source_id is not null;
+where exists (select 1
+				from edw_config."schemas" s
+				where t.schema_id = s.id
+				and  (
+						((s.schema_name='wrk' and l.abbrev = 'wrk') or (s.schema_name='stg' and l.abbrev = 'stg'))
+						or
+						(s.schema_name='public' and l.abbrev = 'src' )
+				)
+			);
 ------------------------------------------------------------------------------
 --INSERT INTO edw_config.domains (domain_name) VALUES('');
 ------------------------------------------------------------------------------
@@ -119,5 +126,4 @@ from edw_config."tables" t
 	join smx.stg_tables st
 	on st.table_name = t.table_name
 
-where st.key_set_name = ''
-and t.source_id is not null;
+where st.key_set_name = '';

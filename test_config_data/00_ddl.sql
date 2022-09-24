@@ -3,6 +3,7 @@ set search_path = 'edw_config';
 -- Drop table
 -- DROP TABLE if exists processes;
 -- DROP TABLE if exists layer_pipelines;
+drop view if exists layer_tables_details;
 DROP TABLE if exists columns_mapping;
 DROP TABLE if exists columns;
 DROP TABLE if exists pipelines;
@@ -210,3 +211,38 @@ CREATE table if not exists columns_mapping (
 -- 	CONSTRAINT processes_fk FOREIGN KEY (source_pipeline_id) REFERENCES source_pipelines(id) ON DELETE RESTRICT ON UPDATE RESTRICT
 -- );
 --
+
+CREATE OR REPLACE VIEW edw_config.layer_tables_details
+AS
+SELECT
+	  lt.id lyr_tbl_id
+	, ds.id source_id, ds.source_name, ds.source_level , ds.active source_active
+	, l.id layer_id, l.abbrev layer, l.layer_level, l.active layer_active
+	, t.id table_id, t.table_name, t.active table_active
+	, s.id schema_id, s.schema_name
+	, d.id db_id, d.db_name
+	, dt.id db_type_id, dt.type db_type
+	, srv.id server_id, srv.server_name
+
+FROM edw_config.layer_tables lt
+
+	join edw_config.layers l
+	on l.id = lt.layer_id
+
+	join edw_config."tables" t
+	on t.id = lt.table_id
+
+	left join edw_config.data_sources ds
+	on ds.id = t.source_id
+
+	join edw_config."schemas" s
+	on s.id = t.schema_id
+
+	join edw_config.db d
+	on d.id = s.db_id
+
+	join edw_config.db_type dt
+	on dt.id = d.db_type_id
+
+	join edw_config.servers srv
+	on srv.id = d.server_id;
