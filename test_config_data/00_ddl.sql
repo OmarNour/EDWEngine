@@ -19,25 +19,13 @@ DROP TABLE if exists data_source_load;
 DROP TABLE if exists data_sources;
 DROP TABLE if exists layers;
 
-CREATE table if not exists layers (
-	id int NOT NULL GENERATED ALWAYS AS IDENTITY,
-	layer_name varchar not NULL,
-	abbrev varchar NULL,
-	layer_level int4 NULL,
-	active int4 NULL default 1,
-	notes text NULL,
-	CONSTRAINT layers_pk PRIMARY KEY (id)
-);
-
 CREATE table if not exists data_sources (
 	id int NOT NULL GENERATED ALWAYS AS IDENTITY,
 	source_name varchar not NULL,
-	layer_id int4 NOT NULL,
 	source_level int4 not NULL,
 	scheduled int4 not NULL,
 	active int4 not NULL default 1,
-	CONSTRAINT data_sources_pk PRIMARY KEY (id),
-	CONSTRAINT data_sources_fk2 FOREIGN KEY (layer_id) REFERENCES layers(id) ON DELETE RESTRICT ON UPDATE RESTRICT
+	CONSTRAINT data_sources_pk PRIMARY KEY (id)
 );
 
 -- CREATE table if not exists source_layers (
@@ -116,10 +104,12 @@ CREATE table if not exists schemas (
 CREATE table if not exists tables (
 	id int NOT NULL GENERATED ALWAYS AS IDENTITY,
 	schema_id int4 not NULL,
+	source_id int4,
 	table_name varchar not NULL,
 	active int4 not NULL default 1,
 	CONSTRAINT tables_pk PRIMARY KEY (id),
-	CONSTRAINT tables_fk1 FOREIGN KEY (schema_id) REFERENCES schemas(id) ON DELETE RESTRICT ON UPDATE RESTRICT
+	CONSTRAINT tables_fk1 FOREIGN KEY (schema_id) REFERENCES schemas(id) ON DELETE RESTRICT ON UPDATE RESTRICT,
+	CONSTRAINT tables_fk2 FOREIGN KEY (source_id) REFERENCES data_sources(id) ON DELETE RESTRICT ON UPDATE RESTRICT
 );
 
 CREATE table if not exists domains (
@@ -143,6 +133,16 @@ CREATE table if not exists columns (
 	CONSTRAINT columns_pk PRIMARY KEY (id),
 	CONSTRAINT columns_fk1 FOREIGN KEY (table_id) REFERENCES tables(id) ON DELETE RESTRICT ON UPDATE RESTRICT,
 	CONSTRAINT columns_fk2 FOREIGN KEY (domain_id) REFERENCES domains(id) ON DELETE RESTRICT ON UPDATE RESTRICT
+);
+
+CREATE table if not exists layers (
+	id int NOT NULL GENERATED ALWAYS AS IDENTITY,
+	layer_name varchar not NULL,
+	abbrev varchar NULL,
+	layer_level int4 NULL,
+	active int4 NULL default 1,
+	notes text NULL,
+	CONSTRAINT layers_pk PRIMARY KEY (id)
 );
 
 CREATE table if not exists layer_tables (

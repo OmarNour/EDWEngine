@@ -31,10 +31,9 @@ VALUES('Data Warehouse', 'dwh', 5, 1, '');
 INSERT INTO edw_config.layers (layer_name, abbrev, layer_level, active, notes)
 VALUES('Presentation Layer', 'pl', 6, 1, '');
 ------------------------------------------------------------------------------
-INSERT INTO edw_config.data_sources ( source_name, layer_id, source_level, scheduled, active)
-select x.source_system_name ,l.id layer_id, 0, 1, 1
-from smx."system" x, edw_config.layers l
-where l.abbrev = 'src';
+INSERT INTO edw_config.data_sources ( source_name, source_level, scheduled, active)
+select x.source_system_name, 0 source_level, 1 scheduled, 1 active
+from smx."system" x;
 ------------------------------------------------------------------------------
 INSERT INTO edw_config.servers (server_name) VALUES('Citizen Prod');
 ------------------------------------------------------------------------------
@@ -79,12 +78,13 @@ select d.id db_id, 0 is_tmp, 'stg' schema_name, null notes
 from edw_config.db d
 where d.db_name = 'ods_db';
 ------------------------------------------------------------------------------
-INSERT INTO edw_config."tables" (schema_id, table_name, active)
-select distinct s.id schema_id, t.table_name, 1 active
-from edw_config.db d, edw_config."schemas" s, smx.stg_tables t
-where s.schema_name = 'public'
-and d.db_name ='raw_db'
-and d.id =s.db_id
+INSERT INTO edw_config."tables" (schema_id, source_id, table_name, active)
+select distinct s.id schema_id, ds.id source_id, t.table_name, 1 active
+from edw_config.db d, edw_config."schemas" s, smx.stg_tables t, edw_config.data_sources ds
+where t.schema = ds.source_name
+and s.schema_name = 'public'
+and d.db_name = 'raw_db'
+and d.id = s.db_id
 and t.table_name <> '' ;
 
 INSERT INTO edw_config."tables" (schema_id, table_name, active)
@@ -106,93 +106,18 @@ and t.table_name <> '' ;
 INSERT INTO edw_config.layer_tables (layer_id, table_id, active)
 select distinct  l.id layer_id, t.id table_id, 1 active
 from edw_config."tables" t, edw_config.layers l
-where
-(
-	exists (select 1
-					from edw_config."schemas" s
-					where s.schema_name = 'wrk'
-					and l.abbrev ='wrk'
-					and t.schema_id=s.id
-					and exists (select 1
-								from edw_config.db d
-								where s.db_id = d.id
-								and d.db_name='ods_db'
-								and exists (select 1
-											from edw_config.servers s2
-											where d.server_id=s2.id
-											and s2.server_name='Citizen Prod'
-											)
-								)
-					)
-
-)
-or
-(
-	exists (select 1
-					from edw_config."schemas" s
-					where s.schema_name = 'public'
-					and l.abbrev ='src'
-					and t.schema_id=s.id
-					and exists (select 1
-								from edw_config.db d
-								where s.db_id = d.id
-								and d.db_name='raw_db'
-								and exists (select 1
-											from edw_config.servers s2
-											where d.server_id=s2.id
-											and s2.server_name='Citizen Prod'
-											)
-								)
-					)
-
-);
+where l.abbrev in ('wrk', 'stg')
+and t.source_id is not null;
 ------------------------------------------------------------------------------
 --INSERT INTO edw_config.domains (domain_name) VALUES('');
 ------------------------------------------------------------------------------
-INSERT INTO edw_config."columns" (table_id, column_name, is_pk, is_sk, is_start_date, is_end_date, scd_type, domain_id, active)
-select t.id table_id, st.column_name,case when upper(st.pk) = 'Y' then 1 else 0 end is_pk
-, 0 is_sk, 0 is_start_date, 0 is_end_date, 0 scd_type, null domain_id, 1 active
+INSERT INTO edw_config."columns" (table_id, column_name, is_pk, is_sk, is_start_date, is_end_date, scd_type, active)
+select distinct t.id table_id, st.column_name,case when upper(st.pk) = 'Y' then 1 else 0 end is_pk
+, 0 is_sk, 0 is_start_date, 0 is_end_date, 0 scd_type, 1 active
 from edw_config."tables" t
 
 	join smx.stg_tables st
 	on st.table_name = t.table_name
 
 where st.key_set_name = ''
-and
-(
-	exists (select 1
-					from edw_config."schemas" s
-					where s.schema_name = 'wrk'
-					and t.schema_id=s.id
-					and exists (select 1
-								from edw_config.db d
-								where s.db_id = d.id
-								and d.db_name='ods_db'
-								and exists (select 1
-											from edw_config.servers s2
-											where d.server_id=s2.id
-											and s2.server_name='Citizen Prod'
-											)
-								)
-					)
-
-)
-or
-(
-	exists (select 1
-					from edw_config."schemas" s
-					where s.schema_name = 'public'
-					and t.schema_id=s.id
-					and exists (select 1
-								from edw_config.db d
-								where s.db_id = d.id
-								and d.db_name='raw_db'
-								and exists (select 1
-											from edw_config.servers s2
-											where d.server_id=s2.id
-											and s2.server_name='Citizen Prod'
-											)
-								)
-					)
-
-);
+and t.source_id is not null;
