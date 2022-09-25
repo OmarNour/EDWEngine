@@ -4,6 +4,7 @@ set search_path = 'edw_config';
 -- DROP TABLE if exists processes;
 -- DROP TABLE if exists layer_pipelines;
 drop view if exists layer_tables_details;
+
 DROP TABLE if exists columns_mapping;
 DROP TABLE if exists columns;
 DROP TABLE if exists pipelines;
@@ -170,12 +171,12 @@ CREATE table if not exists columns_mapping (
 	id int NOT NULL GENERATED ALWAYS AS IDENTITY,
 	pipeline_id int4 not null,
 	col_seq int4 not null,
-	tgt_col_id  int4 not null,
 	src_col_id  int4 not null,
+	tgt_col_id  int4 not null,
 	CONSTRAINT columns_mapping_pk PRIMARY KEY (id),
 	CONSTRAINT columns_mapping_fk  FOREIGN KEY (pipeline_id) REFERENCES pipelines(id) ON DELETE RESTRICT ON UPDATE RESTRICT,
-	CONSTRAINT columns_mapping_fk1 FOREIGN KEY (tgt_col_id) REFERENCES columns(id) ON DELETE RESTRICT ON UPDATE RESTRICT,
-	CONSTRAINT columns_mapping_fk2 FOREIGN KEY (src_col_id) REFERENCES columns(id) ON DELETE RESTRICT ON UPDATE RESTRICT
+	CONSTRAINT columns_mapping_fk1 FOREIGN KEY (src_col_id) REFERENCES columns(id) ON DELETE RESTRICT ON UPDATE RESTRICT,
+	CONSTRAINT columns_mapping_fk2 FOREIGN KEY (tgt_col_id) REFERENCES columns(id) ON DELETE RESTRICT ON UPDATE RESTRICT
 
 );
 -- CREATE table if not exists data_source_layers (
