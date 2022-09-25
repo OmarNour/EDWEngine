@@ -240,17 +240,22 @@ FROM edw_config."tables" t
 	join edw_config.servers srv
 	on srv.id = d.server_id;
 
+CREATE OR REPLACE VIEW edw_config.column_details
+as
+select
+     c.id column_id
+    ,c.column_name
+    ,t.*
+from edw_config.columns c
+join edw_config.tables_details t
+on c.table_id = t.table_id;
+
 CREATE OR REPLACE VIEW edw_config.layer_tables_details
 AS
 SELECT
 	  lt.id lyr_tbl_id
-	, l.id layer_id, l.abbrev layer, l.layer_level, l.active layer_active
-    , t.table_id, t.table_name, t.table_active
-	, t.schema_id, t.schema_name
-	, t.db_id, t.db_name
-	, t.db_type_id, t.db_type
-	, t.server_id, t.server_name
-    , t.source_id, t.source_name, t.source_level , t.source_active
+	,l.id layer_id, l.abbrev layer, l.layer_level, l.active layer_active
+    ,t.*
 
 FROM edw_config.layer_tables lt
 
