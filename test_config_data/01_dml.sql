@@ -127,3 +127,13 @@ from edw_config."tables" t
 	on st.table_name = t.table_name
 
 where st.key_set_name = '';
+------------------------------------------------------------------------------
+INSERT INTO edw_config.pipelines (src_lyr_table_id, tgt_lyr_table_id, active)
+select  src.lyr_tbl_id src_lyr_table_id, tgt.lyr_tbl_id tgt_lyr_table_id, 1 active
+from edw_config.layer_tables_details src, edw_config.layer_tables_details tgt
+where src.table_name = tgt.table_name
+and (
+		(src.layer = 'src' and tgt.layer = 'wrk')
+		or
+		(src.layer = 'wrk' and tgt.layer = 'stg')
+	);
