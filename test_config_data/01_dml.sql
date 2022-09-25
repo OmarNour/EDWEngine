@@ -120,9 +120,12 @@ where exists (select 1
 --INSERT INTO edw_config.domains (domain_name) VALUES('');
 ------------------------------------------------------------------------------
 INSERT INTO edw_config."columns" (table_id, column_name, is_pk, is_sk, is_start_date, is_end_date, scd_type, active)
-select distinct t.id table_id, st.column_name,case when upper(st.pk) = 'Y' then 1 else 0 end is_pk
+select distinct
+			t.table_id
+			,case when t.source_id is not null then  st.column_name_in_source else st.column_name end column_name
+			,case when upper(st.pk) = 'Y' then 1 else 0 end is_pk
 , 0 is_sk, 0 is_start_date, 0 is_end_date, 0 scd_type, 1 active
-from edw_config."tables" t
+from edw_config.tables_details     t
 
 	join smx.stg_tables st
 	on st.table_name = t.table_name
