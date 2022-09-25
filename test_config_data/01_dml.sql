@@ -1,3 +1,4 @@
+delete from edw_config.columns_mapping;
 delete from edw_config.pipelines;
 delete from edw_config."columns";
 delete from edw_config.layer_tables;
@@ -141,3 +142,19 @@ and (
 		or
 		(src.layer = 'wrk' and tgt.layer = 'stg')
 	);
+------------------------------------------------------------------------------
+INSERT INTO edw_config.columns_mapping (pipeline_id, col_seq, src_col_id, tgt_col_id)
+select p.id pipeline_id, 0 col_seq, src_cd.column_id src_col_id, tgt_cd.column_id  tgt_col_id
+from edw_config.pipelines p
+
+join edw_config.layer_tables_details src_ltd
+on src_ltd.lyr_tbl_id = p.src_lyr_table_id
+
+join edw_config.column_details src_cd
+on src_cd.table_id = src_ltd.table_id
+
+join edw_config.layer_tables_details tgt_ltd
+on tgt_ltd.lyr_tbl_id = p.src_lyr_table_id
+
+join edw_config.column_details tgt_cd
+on tgt_cd.table_id = tgt_ltd.table_id;

@@ -4,6 +4,7 @@ set search_path = 'edw_config';
 -- DROP TABLE if exists processes;
 -- DROP TABLE if exists layer_pipelines;
 drop view if exists layer_tables_details;
+drop view if exists column_details;
 drop view if exists tables_details;
 
 DROP TABLE if exists columns_mapping;
