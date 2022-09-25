@@ -1,3 +1,4 @@
+delete from edw_config.pipelines;
 delete from edw_config."columns";
 delete from edw_config.layer_tables;
 delete from edw_config."tables";
