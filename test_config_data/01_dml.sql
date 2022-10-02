@@ -89,18 +89,20 @@ and d.db_name = 'raw_db'
 and d.id = s.db_id
 and t.table_name <> '' ;
 
-INSERT INTO edw_config."tables" (schema_id, table_name, active)
-select distinct s.id schema_id, t.table_name, 1 active
-from edw_config.db d, edw_config."schemas" s, smx.stg_tables t
-where s.schema_name = 'wrk'
+INSERT INTO edw_config."tables" (schema_id, source_id, table_name, active)
+select distinct s.id schema_id,ds.id source_id, t.table_name, 1 active
+from edw_config.db d, edw_config."schemas" s, smx.stg_tables t, edw_config.data_sources ds
+where t.schema = ds.source_name
+and s.schema_name = 'wrk'
 and d.db_name ='ods_db'
 and d.id =s.db_id
 and t.table_name <> '' ;
 
-INSERT INTO edw_config."tables" (schema_id, table_name, active)
-select distinct s.id schema_id, t.table_name, 1 active
-from edw_config.db d, edw_config."schemas" s, smx.stg_tables t
-where s.schema_name = 'stg'
+INSERT INTO edw_config."tables" (schema_id, source_id, table_name, active)
+select distinct s.id schema_id, ds.id source_id, t.table_name, 1 active
+from edw_config.db d, edw_config."schemas" s, smx.stg_tables t, edw_config.data_sources ds
+where t.schema = ds.source_name
+and s.schema_name = 'stg'
 and d.db_name ='ods_db'
 and d.id =s.db_id
 and t.table_name <> '' ;
